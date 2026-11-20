@@ -121,8 +121,9 @@ function accueil() {
       <a class="rouage" href="#/reglages" aria-label="Réglages">⚙</a></div>
     <div class="total"><b>${pctAff(vusTotal, total)} %</b><span>${vusTotal} espèce${vusTotal > 1 ? "s" : ""} observée${vusTotal > 1 ? "s" : ""} sur ${total}</span></div>
     <div class="jauge grande"><i style="width:${ratio(vusTotal, total)}%"></i></div>
-    <div class="aide">Touche ✈ sur un carnet pour dire que tu y voyages : il passe en haut.</div>${cartes}`;
+    <div class="aide">Touche ✈ sur un carnet pour dire que tu y voyages : il passe en haut.</div><div data-inst></div>${cartes}`;
   app.querySelectorAll(".vol").forEach((b) => b.onclick = () => { definirEnCours(b.dataset.c); accueil(); });
+  afficherInstall();
 }
 
 function carnet(cid) {
@@ -222,6 +223,7 @@ function reglages() {
     <div class="bloc"><h4>Hors ligne</h4><p>L'appli marche sans réseau. Pour être sûre d'avoir toutes les photos en voyage, télécharge-les une fois avec le Wi-Fi.</p>
       <button class="btn petit" id="photos">Télécharger toutes les photos</button>
       <progress id="prog" value="0" max="1" hidden></progress><div class="msg" id="msg2"></div></div>
+    <div class="bloc" data-inst-bloc><h4>Installer l'appli</h4><div data-inst></div></div>
     <div class="bloc"><h4>Thème</h4><p>Change l'ambiance de l'appli. « Carnet de naturaliste » est le style d'origine.</p>
       <select class="choix" id="theme" aria-label="Thème"></select></div>
     <div class="bloc"><h4>Mise à jour</h4><p>L'appli cherche toute seule une nouvelle version quand tu l'ouvres, et te prévient. Tu peux aussi la chercher toi-même.</p>
@@ -250,6 +252,9 @@ function reglages() {
     } catch (err) { document.getElementById("msg1").textContent = "Ce fichier n'est pas une sauvegarde valide."; }
   };
   document.getElementById("photos").onclick = telechargerPhotos;
+  afficherInstall();
+  const blocInst = document.querySelector("[data-inst-bloc]");
+  if (blocInst && dejaInstallee()) blocInst.innerHTML = "<h4>Installer l'appli</h4><p>L'appli est déjà installée sur ce téléphone.</p>";
   remplirThemes(document.getElementById("theme"));
   document.getElementById("maj").onclick = () => {
     const b = document.getElementById("maj"); b.textContent = "Vérification…";
@@ -299,6 +304,33 @@ async function demarrer() {
   PAR_ID = Object.fromEntries(ESP.map((e) => [e.id, e]));
   route();
 }
+/* ---------- installation sur le téléphone ---------- */
+let invitInstall = null;   // événement « beforeinstallprompt » de Chrome, quand il juge l'appli installable
+const dejaInstallee = () => (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+function afficherInstall() {
+  document.querySelectorAll("[data-inst]").forEach((zone) => {
+    if (dejaInstallee()) { zone.innerHTML = ""; return; }
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const aide = ios
+      ? "Touche le bouton Partager (le carré avec une flèche), puis « Sur l'écran d'accueil »."
+      : "Touche le menu ⋮ du navigateur (en haut à droite), puis « Installer l'application » ou « Ajouter à l'écran d'accueil ».";
+    zone.innerHTML = `<div class="installer"><div><b>📲 Installer sur le téléphone</b>
+      <span>${invitInstall ? "L'appli aura son icône et marchera sans réseau." : esc(aide)}</span></div>
+      ${invitInstall ? '<button class="btn petit" data-act="installer">Installer</button>' : ""}</div>`;
+    const b = zone.querySelector('[data-act="installer"]');
+    if (b) b.onclick = async () => {
+      const inv = invitInstall;
+      if (!inv) return;
+      inv.prompt();
+      try { await inv.userChoice; } catch (e) { /* refusé ou fermé */ }
+      invitInstall = null;   // une invitation ne sert qu'une fois
+      afficherInstall();
+    };
+  });
+}
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); invitInstall = e; afficherInstall(); });
+window.addEventListener("appinstalled", () => { invitInstall = null; afficherInstall(); });
+
 /* ---------- mises à jour : la nouvelle version s'installe en fond, l'utilisatrice redémarre quand elle veut ---------- */
 let enregistrement = null, majDemandee = false;
 function bandeauMaj(w) {

@@ -168,3 +168,10 @@ progress { width: 100%; height: 10px; accent-color: var(--vert); }
 .bandeau-maj b { display: block; font-size: 16px; }
 .bandeau-maj button { border: 0; border-radius: 8px; padding: 10px 14px; background: var(--vert); color: #fff; font-weight: 700; cursor: pointer; }
 select.choix { width: 100%; padding: 10px 12px; border: 1px solid var(--trait); border-radius: 8px; background: var(--carte-champ); font: inherit; color: var(--encre); }
+
+/* Installation */
+.installer { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin: 0 0 14px; border: 1px dashed var(--vert); border-radius: 10px; background: var(--carte); }
+.installer > div { flex: 1; min-width: 0; }
+.installer b { display: block; font-family: var(--titre); font-size: 18px; }
+.installer span { display: block; font-size: 13px; color: var(--encre-douce); }
+.installer .btn { width: auto; margin: 0; padding: 10px 16px; flex: none; }
