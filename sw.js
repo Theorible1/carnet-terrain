@@ -3,7 +3,8 @@
    Coque (pages, styles, scripts, données) mise en cache à l'installation ; photos mises en cache à la première vue. */
 importScripts("version.js");
 const CACHE = "carnet-" + self.VERSION;
-const COQUE = ["./", "index.html", "style.css", "app.js", "version.js", "themes.css", "themes.js", "manifest.webmanifest", "data/especes.json", "icons/icon-192.png", "icons/icon-512.png"];
+const COQUE = ["./", "index.html", "style.css", "app.js", "version.js", "themes.css", "themes.js", "manifest.webmanifest", "data/especes.json", "icons/icon-192.png", "icons/icon-512.png",
+  "fonts/caveat.woff2", "fonts/nunito.woff2", "fonts/nunito-italique.woff2"];
 
 self.addEventListener("install", (e) => {
   // Pas de skipWaiting ici : la nouvelle version s'installe en fond puis attend. L'appli affiche « Nouvelle version

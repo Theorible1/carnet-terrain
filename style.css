@@ -1,3 +1,7 @@
+/* Polices libres (OFL, Google Fonts), embarquées pour marcher sans réseau */
+@font-face { font-family: "Caveat"; font-weight: 400 700; font-display: swap; src: url(fonts/caveat.woff2) format("woff2"); }
+@font-face { font-family: "Nunito"; font-weight: 400 800; font-display: swap; src: url(fonts/nunito.woff2) format("woff2"); }
+@font-face { font-family: "Nunito"; font-style: italic; font-weight: 400 800; font-display: swap; src: url(fonts/nunito-italique.woff2) format("woff2"); }
 :root {
   --papier: #f4ecd8;
   --papier-fonce: #e9dcbc;
@@ -8,14 +12,14 @@
   --ocre: #b5793a;
   --rouge: #9c4a3a;
   --bleu: #4f6f84;
-  --titre: "Cormorant Garamond", Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
-  --corps: Georgia, "Times New Roman", serif;
+  --titre: "Caveat", "Segoe Print", cursive;
+  --corps: "Nunito", "Segoe UI", Roboto, sans-serif;
   --carte: rgba(255,255,255,.4);
   --carte-champ: rgba(255,255,255,.55);
-  --carte-forte: var(--carte-forte);
+  --carte-forte: rgba(255,255,255,.7);
   --piste: rgba(59,47,34,.12);
   --voile: rgba(59,47,34,.09);
-  --main: "Segoe Script", "Bradley Hand", "Comic Sans MS", cursive;
+  --main: "Caveat", "Segoe Print", cursive;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; min-height: 100%; }
@@ -69,32 +73,54 @@ hr { border: 0; border-top: 1px dashed var(--trait); margin: 14px 0; }
 .chiffres { font-size: 13px; color: var(--encre-douce); margin-top: 4px; }
 
 /* Carnet */
-.groupes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0 12px; }
-.groupe { background: var(--carte); border: 1px solid var(--trait); border-radius: 8px; padding: 8px 10px;
-  font-size: 13px; text-align: left; cursor: pointer; }
-.groupe b { display: block; font-family: var(--titre); font-size: 18px; }
-.groupe.on { border: 2px solid var(--encre); padding: 7px 9px; background: var(--carte-forte); }
-.groupe:last-child:nth-child(odd) { grid-column: span 2; }
+/* Catégories : 6 boutons sur 2 lignes de 3 (Tous + 5 groupes), la liste démarre juste dessous */
+.groupes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0 10px; scroll-margin-top: 70px; }
+.groupe { background: var(--carte); border: 1px solid var(--trait); border-radius: 10px; padding: 6px 4px 5px;
+  font-size: 12px; text-align: center; cursor: pointer; color: var(--encre-douce); line-height: 1.2; }
+.groupe .emo { display: block; font-size: 20px; line-height: 1.1; }
+.groupe b { display: block; font-family: var(--corps); font-size: 13.5px; font-weight: 700; color: var(--encre); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.groupe .jauge { height: 4px; margin: 4px 6px 0; }
+.groupe.on { background: var(--vert); border-color: var(--vert); color: #e6eedc; }
+.groupe.on b { color: #fff; }
+.groupe.on .jauge { background: rgba(255,255,255,.3); }
+.groupe.on .jauge i { background: #fff; }
 .puces { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
 .puce { font-size: 13px; border: 1px solid var(--trait); border-radius: 20px; padding: 5px 12px; background: none; cursor: pointer; }
 .puce.on { background: var(--encre); color: var(--papier); border-color: var(--encre); }
 .recherche { width: 100%; padding: 10px 12px; border: 1px solid var(--trait); border-radius: 8px;
   background: var(--carte-champ); font: inherit; margin-bottom: 8px; }
-.famille { font-family: var(--main); font-size: 22px; margin: 14px 0 6px; color: var(--ocre); }
-.grille { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.esp { text-align: center; font-size: 12.5px; line-height: 1.2; display: block; }
-.vignette { aspect-ratio: 1; border-radius: 6px; position: relative; margin-bottom: 5px; overflow: hidden;
+.titre-liste { font-family: var(--titre); font-size: 28px; font-weight: 700; margin: 4px 0 0; line-height: 1.1; }
+.compte { font-size: 13.5px; color: var(--encre-douce); margin-bottom: 10px; }
+/* Grandes photos sur 2 colonnes, nom dessous ; triées par famille puis par nom, sans titre de famille (plus de trous) */
+.grille { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.esp { display: block; background: var(--carte-forte); border-radius: 10px; overflow: hidden; box-shadow: 0 2px 5px rgba(59,47,34,.18); }
+.vignette { aspect-ratio: 4/3; position: relative; overflow: hidden;
   background: radial-gradient(ellipse at 50% 55%, #c7b590 0%, #a99670 55%, #8f7f60 100%);
-  box-shadow: inset 0 0 0 3px rgba(255,255,255,.55); display: flex; align-items: center; justify-content: center; font-size: 34px; }
+  display: flex; align-items: center; justify-content: center; font-size: 40px; }
 .vignette img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.esp.pasvu .vignette { background: var(--voile); box-shadow: inset 0 0 0 1px var(--trait); }
-.esp.pasvu .vignette img { filter: grayscale(1) brightness(.75) contrast(.85); opacity: .45; }
-.esp.pasvu .vignette .embleme { opacity: .25; filter: grayscale(1); }
-.esp.pasvu .nom { color: var(--encre-douce); font-style: italic; }
-.tampon { position: absolute; right: 4px; bottom: 4px; width: 26px; height: 26px; border-radius: 50%; background: var(--vert);
-  color: #fff; font-size: 15px; display: flex; align-items: center; justify-content: center; transform: rotate(-12deg);
-  box-shadow: 0 1px 3px rgba(0,0,0,.35); }
-.rare { color: var(--rouge); font-family: var(--main); font-size: 13px; display: block; }
+.esp .txt { padding: 6px 9px 8px; }
+.esp .nom { display: block; font-family: var(--titre); font-size: 23px; font-weight: 700; line-height: 1; }
+.esp .fam { display: block; font-size: 12.5px; color: var(--encre-douce); margin-top: 2px; }
+/* vu : cadre vert et tampon */
+.esp:not(.pasvu) { box-shadow: 0 0 0 3px var(--vert), 0 2px 5px rgba(59,47,34,.18); }
+.tampon { position: absolute; right: 6px; bottom: 6px; width: 30px; height: 30px; border-radius: 50%; background: var(--vert);
+  color: #fff; font-size: 17px; display: flex; align-items: center; justify-content: center; transform: rotate(-12deg);
+  box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+/* Indice de danger : pastille de couleur (catalogue : coin haut droit de la photo ; fiche : bandeau sous les infos) */
+.pastille { display: inline-block; width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.45); flex: none; }
+.vignette .pastille { position: absolute; right: 7px; top: 7px; width: 18px; height: 18px; }
+.d1 .pastille, .pastille.d1 { background: #4f9a3a; }
+.d2 .pastille, .pastille.d2 { background: #e2c11d; }
+.d3 .pastille, .pastille.d3 { background: #e07b1f; }
+.d4 .pastille, .pastille.d4 { background: #c62f24; }
+.danger { display: flex; gap: 10px; align-items: flex-start; margin: 10px 0 0; padding: 9px 12px; border-radius: 10px; background: var(--carte); border: 1px solid var(--trait); }
+.danger .pastille { width: 22px; height: 22px; margin-top: 3px; }
+.danger b { display: block; font-family: var(--titre); font-size: 24px; line-height: 1.05; }
+.danger i { display: block; font-size: 14px; color: var(--encre-douce); margin-top: 2px; }
+.danger.d3 { border-color: #e07b1f; }
+.danger.d4 { border: 2px solid #c62f24; background: rgba(198,47,36,.08); }
+.rare { position: absolute; left: 6px; top: 6px; color: #fff; background: var(--rouge); font-size: 11.5px; font-weight: 700;
+  border-radius: 9px; padding: 1px 8px; }
 .vide { text-align: center; color: var(--encre-douce); padding: 36px 8px; font-family: var(--main); font-size: 18px; }
 
 /* Fiche */
@@ -116,15 +142,30 @@ hr { border: 0; border-top: 1px dashed var(--trait); margin: 14px 0; }
 .info { border: 1px solid var(--trait); border-radius: 6px; padding: 4px 9px; font-size: 13px; background: var(--carte); }
 .info.rare-e { border-color: var(--rouge); color: var(--rouge); }
 h4 { font-size: 21px; margin: 18px 0 5px; }
+/* fiche en blocs : un cadre par question, pour ne pas faire un pavé */
+.cadre { background: var(--carte); border: 1px solid var(--trait); border-radius: 10px; padding: 10px 14px 12px; margin: 12px 0; }
+.cadre h4 { margin: 0 0 6px; font-size: 20px; }
 ul.signes { margin: 0; padding: 0; list-style: none; }
-ul.signes li { padding: 4px 0 4px 24px; position: relative; }
+ul.signes li { padding: 6px 0 6px 24px; position: relative; line-height: 1.4; }
+ul.signes li + li { border-top: 1px dashed var(--trait); }
 ul.signes li::before { content: "✎"; position: absolute; left: 0; color: var(--ocre); }
 p.txt { margin: 4px 0; }
-.conf { margin: 6px 0; padding-left: 10px; border-left: 3px solid var(--trait); }
+.conf { margin: 8px 0 0; padding: 2px 0 2px 10px; border-left: 3px solid var(--ocre); line-height: 1.4; }
+.conf b { display: block; font-family: var(--titre); font-size: 18px; }
+.conf span { font-size: 15px; }
+.ligne-info { display: grid; grid-template-columns: 28px 1fr; column-gap: 6px; margin: 10px 0 0; line-height: 1.4; }
+.ligne-info .ico { grid-row: span 2; font-size: 18px; padding-top: 2px; }
+.ligne-info small { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--encre-douce); }
+.note { margin: 16px 4px; padding: 12px 14px; border-radius: 4px; transform: rotate(-.6deg);
+  background: color-mix(in srgb, var(--ocre) 13%, var(--papier)); border-left: 4px solid var(--ocre); box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+.note h4 { margin: 0 0 4px; font-size: 19px; color: var(--ocre); }
+.note p { margin: 0; line-height: 1.45; }
+.sources-bloc summary { cursor: pointer; font-family: var(--titre); font-size: 18px; font-weight: 700; }
+.sources-bloc[open] summary { margin-bottom: 6px; }
 .pays { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
 .pays button { font-size: 13px; background: var(--papier-fonce); border: 1px solid transparent; border-radius: 6px; padding: 5px 10px; cursor: pointer; }
 .pays button.on { border-color: var(--encre); background: var(--carte-forte); }
-.btn { display: block; width: 100%; margin: 20px 0 6px; padding: 15px; border: 2px solid var(--vert); border-radius: 12px;
+.btn { display: block; width: 100%; margin: 16px 0 4px; padding: 15px; border: 2px solid var(--vert); border-radius: 12px;
   background: transparent; color: var(--vert); font-family: var(--titre); font-size: 22px; font-weight: 700; cursor: pointer; }
 .btn.vu { background: var(--vert); color: #fff; }
 .btn.petit { margin: 8px 0; padding: 11px; font-size: 18px; }
@@ -180,3 +221,5 @@ select.choix { width: 100%; padding: 10px 12px; border: 1px solid var(--trait); 
 .installer .ligne > div { flex: 1; min-width: 0; }
 .installer ol.etapes { margin: 4px 0 0; padding-left: 20px; font-size: 14px; }
 .installer ol.etapes li { margin: 3px 0; }
+
+.sources a { color: var(--bleu); text-decoration: underline; }

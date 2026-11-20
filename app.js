@@ -11,14 +11,16 @@ const CARNETS = [
   { id: "costa_rica", nom: "Costa Rica", couleur: "#7d8a3a" },
 ];
 const GROUPES = [
-  { id: "mammiferes", nom: "Mammifères", emb: "🐾" },
-  { id: "oiseaux", nom: "Oiseaux", emb: "🐦" },
-  { id: "reptiles_amphibiens", nom: "Reptiles et amphibiens", emb: "🦎" },
-  { id: "insectes_araignees", nom: "Insectes et araignées", emb: "🦋" },
-  { id: "vie_marine", nom: "Vie marine", emb: "🐠" },
+  { id: "mammiferes", nom: "Mammifères", court: "Mammifères", emb: "🐾" },
+  { id: "oiseaux", nom: "Oiseaux", court: "Oiseaux", emb: "🐦" },
+  { id: "reptiles_amphibiens", nom: "Reptiles et amphibiens", court: "Reptiles", emb: "🦎" },
+  { id: "insectes_araignees", nom: "Insectes et araignées", court: "Insectes", emb: "🦋" },
+  { id: "vie_marine", nom: "Vie marine", court: "Vie marine", emb: "🐠" },
 ];
 const UICN = { LC: "Non menacé", NT: "Quasi menacé", VU: "Vulnérable", EN: "En danger", CR: "En danger critique", DD: "Données insuffisantes" };
 const RARETE = { commun: "Commun", peu_commun: "Peu commun", rare: "Rare" };
+/* Indice de danger (noms choisis par Quentin le 20/11/2026), avec une pastille de couleur. */
+const DANGER = { 1: "À papouiller sans retenue", 2: "Ouch, attention ça pique", 3: "En photo, c'était bien quand même", 4: "Fuis, cours pour ta vie" };
 
 let ESP = [];
 let PAR_ID = {};
@@ -131,10 +133,10 @@ function carnet(cid) {
   if (!c) return (location.hash = "#/");
   const base = especesDuCarnet(cid);
   const n = compteVus(base);
-  const tuiles = GROUPES.map((g) => {
-    const l = base.filter((e) => e.groupe === g.id);
-    if (!l.length) return "";
-    return `<button class="groupe ${etat.groupe === g.id ? "on" : ""}" data-g="${g.id}"><b>${g.emb} ${esc(g.nom)}</b>${compteVus(l)} / ${l.length}
+  // 6 boutons (Tous + 5 groupes) sur 2 lignes de 3 ; un groupe vide reste affiché (grisé) pour garder la grille.
+  const tuiles = [{ id: "tous", court: "Tous", emb: "📖" }, ...GROUPES].map((g) => {
+    const l = g.id === "tous" ? base : base.filter((e) => e.groupe === g.id);
+    return `<button class="groupe ${etat.groupe === g.id ? "on" : ""}" data-g="${g.id}" ${l.length ? "" : "disabled"}><span class="emo">${g.emb}</span><b>${esc(g.court)}</b>${compteVus(l)} / ${l.length}
       <div class="jauge"><i style="width:${ratio(compteVus(l), l.length)}%"></i></div></button>`;
   }).join("");
   const filtres = [["tous", "Tous"], ["pasvu", "Pas encore vus"], ["vu", "Vus"], ["rare", "Rares"]]
@@ -148,7 +150,11 @@ function carnet(cid) {
     <input class="recherche" type="search" placeholder="Chercher un animal…" value="${esc(etat.q)}" aria-label="Chercher">
     <div id="liste"></div>`;
   document.getElementById("encours").onclick = () => { definirEnCours(cid); carnet(cid); };
-  app.querySelectorAll(".groupe").forEach((b) => b.onclick = () => { etat.groupe = etat.groupe === b.dataset.g ? "tous" : b.dataset.g; carnet(cid); });
+  // Choix d'une catégorie : la grille des catégories remonte en haut de l'écran, la liste est juste dessous.
+  app.querySelectorAll(".groupe").forEach((b) => b.onclick = () => {
+    etat.groupe = b.dataset.g; carnet(cid);
+    const g = app.querySelector(".groupes"); if (g && window.scrollY > 0) g.scrollIntoView({ block: "start" });
+  });
   app.querySelectorAll(".puce").forEach((b) => b.onclick = () => { etat.filtre = b.dataset.f; carnet(cid); });
   app.querySelector(".recherche").oninput = (ev) => { etat.q = ev.target.value; liste(cid); };
   liste(cid);
@@ -164,14 +170,13 @@ function liste(cid) {
   l.sort(tri);
   const zone = document.getElementById("liste");
   if (!l.length) { zone.innerHTML = `<div class="vide">Rien à montrer ici pour l'instant.</div>`; return; }
-  let html = "", fam = null;
-  for (const e of l) {
-    if (e.famille_simple !== fam) { if (fam !== null) html += "</div>"; fam = e.famille_simple; html += `<div class="famille">${esc(fam)}</div><div class="grille">`; }
+  const g = etat.groupe === "tous" ? { nom: "Tous les animaux", emb: "📖" } : groupeInfo(etat.groupe);
+  const cartes = l.map((e) => {
     const vu = !!vus()[e.id];
-    html += `<a class="esp ${vu ? "" : "pasvu"}" href="#/espece/${e.id}/${cid}"><div class="vignette">${vignette(e)}${vu ? '<span class="tampon">✓</span>' : ""}</div>
-      <span class="nom">${esc(e.nom_fr)}</span>${rareteDans(e, cid) === "rare" ? '<span class="rare">rare</span>' : ""}</a>`;
-  }
-  zone.innerHTML = html + "</div>";
+    return `<a class="esp ${vu ? "" : "pasvu"}" href="#/espece/${e.id}/${cid}"><div class="vignette">${vignette(e)}${vu ? '<span class="tampon">✓</span>' : ""}${rareteDans(e, cid) === "rare" ? '<span class="rare">rare</span>' : ""}${e.danger && DANGER[e.danger.niveau] ? `<span class="pastille d${e.danger.niveau}" title="${DANGER[e.danger.niveau]}"></span>` : ""}</div>
+      <div class="txt"><span class="nom">${esc(e.nom_fr)}</span><span class="fam">${esc(e.famille_simple)}</span></div></a>`;
+  }).join("");
+  zone.innerHTML = `<h2 class="titre-liste">${g.emb} ${esc(g.nom)}</h2><div class="compte">${l.length} espèce${l.length > 1 ? "s" : ""} · touche une photo pour la fiche</div><div class="grille">${cartes}</div>`;
 }
 
 function fiche(id, cid) {
@@ -182,7 +187,8 @@ function fiche(id, cid) {
   const pp = e.par_pays[etat.pays] || {};
   const nbCarnets = e.pays.length;
   const gal = galerie(e);
-  const confusions = (e.confusions || []).map((c) => `<div class="conf"><b>${esc(c.nom)}</b> : ${esc(c.difference)}</div>`).join("");
+  const confusions = (e.confusions || []).map((c) => `<div class="conf"><b>${esc(c.nom)}</b><span>${esc(c.difference)}</span></div>`).join("");
+  const ligne = (ico, titre, texte) => texte ? `<div class="ligne-info"><span class="ico">${ico}</span><small>${titre}</small><span>${esc(texte)}</span></div>` : "";
   const onglets = e.pays.length > 1 ? `<div class="pays">${e.pays.map((p) => `<button class="${p === etat.pays ? "on" : ""}" data-p="${p}">${esc(nomCarnet(p))}</button>`).join("")}</div>` : "";
   app.innerHTML = `<div class="barre"><a class="retour" href="#/carnet/${cid}" aria-label="Retour">‹</a><div class="gros"><h1>${esc(e.nom_fr)}</h1>
       <div class="nomsci">${esc(e.nom_scientifique)}</div></div></div>
@@ -191,16 +197,16 @@ function fiche(id, cid) {
       ${pp.rarete ? `<span class="info ${pp.rarete === "rare" ? "rare-e" : ""}">${esc(RARETE[pp.rarete] || pp.rarete)}</span>` : ""}
       <span class="info">${esc(UICN[e.statut_uicn] || e.statut_uicn)}</span></div>
     ${e.doute ? `<div class="doute">À vérifier : ${esc(e.doute)}</div>` : ""}
-    <h4>Pour le reconnaître</h4><ul class="signes">${(e.signes || []).map((s) => `<li>${esc(s)}</li>`).join("")}</ul>
-    ${confusions ? `<h4>À ne pas confondre avec</h4>${confusions}` : ""}
-    <h4>Où le chercher</h4>${onglets}
-    <p class="txt"><b>Milieu :</b> ${esc(e.habitat)}</p>
-    <p class="txt"><b>Où :</b> ${esc(pp.ou_voir || "")}</p>
-    <p class="txt"><b>Quand :</b> ${esc(pp.quand || "")}</p>
-    <h4>Le saviez-vous ?</h4><p class="txt">${esc(e.anecdote)}</p>
+    ${e.danger && DANGER[e.danger.niveau] ? `<div class="danger d${e.danger.niveau}"><span class="pastille"></span><div><b>${DANGER[e.danger.niveau]}</b><i>${esc(e.danger.raison)}</i></div></div>` : ""}
     <button class="btn ${v ? "vu" : ""}" id="vu">${v ? "✓ Vu !" : "Je l'ai vu"}</button>
     <div class="date">${v ? "le " + esc(dateFr(v.date)) + (nbCarnets > 1 ? ", coché dans " + nbCarnets + " carnets" : "") : ""}</div>
-    ${v ? `<h4>Mon mot</h4><textarea class="mot" id="mot" placeholder="Où, quand, avec qui…">${esc(v.note || "")}</textarea>` : ""}`;
+    ${v ? `<div class="cadre"><h4>Mon mot</h4><textarea class="mot" id="mot" placeholder="Où, quand, avec qui…">${esc(v.note || "")}</textarea></div>` : ""}
+    <div class="cadre"><h4>🔍 Pour le reconnaître</h4><ul class="signes">${(e.signes || []).map((s) => `<li>${esc(s)}</li>`).join("")}</ul></div>
+    ${confusions ? `<div class="cadre"><h4>⚖️ À ne pas confondre avec</h4>${confusions}</div>` : ""}
+    <div class="cadre"><h4>🧭 Où le chercher</h4>${onglets}
+      ${ligne("🌿", "Milieu", e.habitat)}${ligne("📍", "Où", pp.ou_voir)}${ligne("🗓️", "Quand", pp.quand)}</div>
+    ${e.anecdote ? `<div class="note"><h4>Le saviez-vous ?</h4><p>${esc(e.anecdote)}</p></div>` : ""}
+    ${sourcesHtml(e)}`;
   brancherGalerie(gal.ph);
   app.querySelectorAll(".pays button").forEach((b) => b.onclick = () => { etat.pays = b.dataset.p; fiche(id, cid); });
   document.getElementById("vu").onclick = () => {
@@ -210,6 +216,16 @@ function fiche(id, cid) {
   };
   const mot = document.getElementById("mot");
   if (mot) mot.oninput = () => { const m = { ...vus() }; if (m[id]) { m[id] = { ...m[id], note: mot.value }; ecrireVus(m); } };
+}
+
+function sourcesHtml(e) {
+  if (!(e.src || []).length) return "";
+  const liens = e.src.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.n)}</a>`).join(" · ");
+  const etat = e.ver === "ok" ? "✓ Nom scientifique, présence dans les pays et statut de conservation contrôlés sur des bases publiques."
+    : e.ver === "remarque" ? "✓ Contrôlé sur des bases publiques, avec une remarque : " + (e.alertes || []).join(" ; ") + "."
+    : "⚠ À vérifier : " + (e.alertes || []).join(" ; ") + ".";
+  return `<details class="cadre sources-bloc"><summary>Sources et vérification</summary><p class="txt sources">${liens}</p>
+    <p class="petite">${esc(etat)} Les tailles et les signes de reconnaissance ne sont pas encore vérifiés.</p></details>`;
 }
 
 function reglages() {
@@ -254,7 +270,7 @@ function reglages() {
   document.getElementById("photos").onclick = telechargerPhotos;
   afficherInstall();
   const blocInst = document.querySelector("[data-inst-bloc]");
-  if (blocInst && dejaInstallee()) blocInst.innerHTML = "<h4>Installer l'appli</h4><p>L'appli est déjà installée sur ce téléphone.</p>";
+  if (blocInst && dejaInstallee()) blocInst.remove();   // installée : on n'en parle plus
   remplirThemes(document.getElementById("theme"));
   document.getElementById("maj").onclick = () => {
     const b = document.getElementById("maj"); b.textContent = "Vérification…";
@@ -306,7 +322,10 @@ async function demarrer() {
 }
 /* ---------- installation sur le téléphone ---------- */
 let invitInstall = null;   // événement « beforeinstallprompt » de Chrome, quand il juge l'appli installable
-const dejaInstallee = () => (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+const dejaInstallee = () => {
+  const lancee = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+  try { if (lancee) localStorage.setItem("carnet.installee", "1"); return lancee || localStorage.getItem("carnet.installee") === "1"; } catch (e) { return lancee; }
+};
 let aideInstallOuverte = false, messageInstall = "";
 function etapesInstall() {
   const ua = navigator.userAgent;
@@ -316,7 +335,7 @@ function etapesInstall() {
 }
 function afficherInstall() {
   document.querySelectorAll("[data-inst]").forEach((zone) => {
-    if (dejaInstallee()) { zone.innerHTML = `<div class="installer"><div><b>📲 Appli installée</b><span>Elle est sur l'écran d'accueil de ce téléphone.</span></div></div>`; return; }
+    if (dejaInstallee()) { zone.innerHTML = ""; return; }   // installée : plus de bouton
     const etapes = etapesInstall();
     const detail = aideInstallOuverte || !invitInstall
       ? `<ol class="etapes">${etapes.map((e) => `<li>${esc(e)}</li>`).join("")}</ol>
@@ -339,7 +358,7 @@ function afficherInstall() {
   });
 }
 window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); invitInstall = e; afficherInstall(); });
-window.addEventListener("appinstalled", () => { invitInstall = null; messageInstall = ""; afficherInstall(); });
+window.addEventListener("appinstalled", () => { try { localStorage.setItem("carnet.installee", "1"); } catch (e) { /* tant pis */ } invitInstall = null; messageInstall = ""; afficherInstall(); });
 
 /* ---------- mises à jour : la nouvelle version s'installe en fond, l'utilisatrice redémarre quand elle veut ---------- */
 let enregistrement = null, majDemandee = false;
