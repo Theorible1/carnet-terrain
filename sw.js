@@ -3,13 +3,20 @@
    Coque (pages, styles, scripts, données) mise en cache à l'installation ; photos mises en cache à la première vue. */
 importScripts("version.js");
 const CACHE = "carnet-" + self.VERSION;
-const COQUE = ["./", "index.html", "style.css", "app.js", "version.js", "manifest.webmanifest", "data/especes.json", "icons/icon-192.png", "icons/icon-512.png"];
+const COQUE = ["./", "index.html", "style.css", "app.js", "version.js", "themes.css", "themes.js", "manifest.webmanifest", "data/especes.json", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(COQUE)).then(() => self.skipWaiting()));
+  // Pas de skipWaiting ici : la nouvelle version s'installe en fond puis attend. L'appli affiche « Nouvelle version
+  // disponible » et c'est l'utilisatrice qui redémarre (message MAJ).
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(COQUE.map((f) => new Request(f, { cache: "reload" })))));
 });
 self.addEventListener("activate", (e) => {
   e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith("carnet-") && k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
+});
+self.addEventListener("message", (e) => {
+  if (!e.data) return;
+  if (e.data.type === "MAJ") self.skipWaiting();
+  if (e.data.type === "VERSION" && e.ports[0]) e.ports[0].postMessage(self.VERSION);
 });
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;

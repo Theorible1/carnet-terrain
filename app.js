@@ -4,11 +4,11 @@
    Coches : localStorage, clé "carnet.vus" = { id: { date: "AAAA-MM-JJ", note: "..." } }. */
 
 const CARNETS = [
-  { id: "afrique_du_sud", nom: "Afrique du Sud", couleur: "#b5793a", etiquette: "déjà visité" },
-  { id: "japon", nom: "Japon", couleur: "#9c4a3a", etiquette: "déjà visité · on y retourne" },
-  { id: "france", nom: "France et voisins", couleur: "#4f6f84", etiquette: "à la maison" },
-  { id: "thailande", nom: "Thaïlande", couleur: "#5f7a4a", etiquette: "déjà visité · on y retourne" },
-  { id: "costa_rica", nom: "Costa Rica", couleur: "#7d8a3a", etiquette: "prochain départ" },
+  { id: "afrique_du_sud", nom: "Afrique du Sud", couleur: "#b5793a" },
+  { id: "japon", nom: "Japon", couleur: "#9c4a3a" },
+  { id: "france", nom: "France et voisins", couleur: "#4f6f84" },
+  { id: "thailande", nom: "Thaïlande", couleur: "#5f7a4a" },
+  { id: "costa_rica", nom: "Costa Rica", couleur: "#7d8a3a" },
 ];
 const GROUPES = [
   { id: "mammiferes", nom: "Mammifères", emb: "🐾" },
@@ -36,6 +36,26 @@ function ecrireVus(v) {
 }
 mem = lireVus();
 const vus = () => mem;
+let enCours = "";
+try { enCours = localStorage.getItem("carnet.encours") || ""; } catch (e) { /* stockage indisponible */ }
+function definirEnCours(id) {
+  enCours = enCours === id ? "" : id;
+  try { localStorage.setItem("carnet.encours", enCours); } catch (e) { /* pas grave : gardé en mémoire */ }
+}
+
+/* ---------- thème ---------- */
+function themeChoisi() { try { return localStorage.getItem("carnet.theme") || "carnet"; } catch (e) { return "carnet"; } }
+function appliquerTheme() {
+  const t = themeChoisi();
+  const r = document.documentElement;
+  const connu = t !== "carnet" && typeof THEMES !== "undefined" && THEMES[t];
+  if (connu) r.setAttribute("data-theme", t); else r.removeAttribute("data-theme");
+  const info = connu && CATALOGUE_THEMES.themes.find((x) => x.id === t);
+  r.style.colorScheme = info && info.mode === "sombre" ? "dark" : "light";
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = getComputedStyle(r).getPropertyValue(connu ? "--page" : "--papier").trim() || "#f4ecd8";
+}
+appliquerTheme();
 
 /* ---------- utilitaires ---------- */
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -43,7 +63,10 @@ const nomCarnet = (id) => (CARNETS.find((c) => c.id === id) || {}).nom || id;
 const groupeInfo = (id) => GROUPES.find((g) => g.id === id) || { nom: id, emb: "🐾" };
 const dateFr = (iso) => { try { return new Date(iso + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }); } catch (e) { return iso; } };
 const aujourdhui = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
-const pct = (a, b) => (b ? Math.round((100 * a) / b) : 0);
+const ratio = (a, b) => (b ? (100 * a) / b : 0);
+const pct = (a, b) => Math.round(ratio(a, b));
+/* Texte du pourcentage : une décimale sous 10 %, pour que les premières coches se voient. */
+const pctAff = (a, b) => { const r = ratio(a, b); return (r > 0 && r < 10 ? (Math.round(r * 10) / 10).toString().replace(".", ",") : String(Math.round(r))); };
 const especesDuCarnet = (cid) => ESP.filter((e) => e.pays.includes(cid));
 const compteVus = (liste) => liste.filter((e) => vus()[e.id]).length;
 const rareteDans = (e, cid) => ((e.par_pays || {})[cid] || (e.par_pays || {})[e.pays[0]] || {}).rarete;
@@ -79,17 +102,27 @@ function brancherGalerie(ph) {
 function accueil() {
   const total = ESP.length;
   const vusTotal = compteVus(ESP);
-  const cartes = CARNETS.map((c) => {
+  // Voyage en cours d'abord, puis par complétion décroissante (à égalité : ordre d'origine).
+  const lignes = CARNETS.map((c, i) => {
     const l = especesDuCarnet(c.id);
     const n = compteVus(l);
-    return `<a class="carnet" href="#/carnet/${c.id}"><div class="tranche" style="background:${c.couleur}"></div><div class="corps">
-      <h3>${esc(c.nom)}</h3><div class="etiquette">${esc(c.etiquette)}</div>
-      <div class="jauge"><i style="width:${pct(n, l.length)}%"></i></div>
-      <div class="chiffres">${n} / ${l.length} · ${pct(n, l.length)} %</div></div></a>`;
+    return { c, i, l, n, p: l.length ? n / l.length : 0 };
+  }).sort((x, y) => (y.c.id === enCours) - (x.c.id === enCours) || y.p - x.p || x.i - y.i);
+  const cartes = lignes.map(({ c, l, n }) => {
+    const cours = c.id === enCours;
+    return `<div class="carnet ${cours ? "cours" : ""}"><div class="tranche" style="background:${c.couleur}"></div>
+      <a class="corps" href="#/carnet/${c.id}"><h3>${esc(c.nom)}</h3>
+      ${cours ? '<div class="etiquette">✈ voyage en cours</div>' : ""}
+      <div class="jauge"><i style="width:${ratio(n, l.length)}%"></i></div>
+      <div class="chiffres">${n} / ${l.length} · ${pctAff(n, l.length)} %</div></a>
+      <button class="vol ${cours ? "on" : ""}" data-c="${c.id}" aria-pressed="${cours}" aria-label="Voyage en cours : ${esc(c.nom)}" title="Voyage en cours">✈</button></div>`;
   }).join("");
   app.innerHTML = `<div class="barre"><div class="gros"><h1>Mes carnets de voyage</h1><div class="sous">toutes les bêtes croisées en route</div></div>
       <a class="rouage" href="#/reglages" aria-label="Réglages">⚙</a></div>
-    <div class="total"><b>${vusTotal}</b><span>espèce${vusTotal > 1 ? "s" : ""} observée${vusTotal > 1 ? "s" : ""} sur ${total}</span></div>${cartes}`;
+    <div class="total"><b>${pctAff(vusTotal, total)} %</b><span>${vusTotal} espèce${vusTotal > 1 ? "s" : ""} observée${vusTotal > 1 ? "s" : ""} sur ${total}</span></div>
+    <div class="jauge grande"><i style="width:${ratio(vusTotal, total)}%"></i></div>
+    <div class="aide">Touche ✈ sur un carnet pour dire que tu y voyages : il passe en haut.</div>${cartes}`;
+  app.querySelectorAll(".vol").forEach((b) => b.onclick = () => { definirEnCours(b.dataset.c); accueil(); });
 }
 
 function carnet(cid) {
@@ -101,16 +134,19 @@ function carnet(cid) {
     const l = base.filter((e) => e.groupe === g.id);
     if (!l.length) return "";
     return `<button class="groupe ${etat.groupe === g.id ? "on" : ""}" data-g="${g.id}"><b>${g.emb} ${esc(g.nom)}</b>${compteVus(l)} / ${l.length}
-      <div class="jauge"><i style="width:${pct(compteVus(l), l.length)}%"></i></div></button>`;
+      <div class="jauge"><i style="width:${ratio(compteVus(l), l.length)}%"></i></div></button>`;
   }).join("");
   const filtres = [["tous", "Tous"], ["pasvu", "Pas encore vus"], ["vu", "Vus"], ["rare", "Rares"]]
     .map(([k, t]) => `<button class="puce ${etat.filtre === k ? "on" : ""}" data-f="${k}">${t}</button>`).join("");
   app.innerHTML = `<div class="barre"><a class="retour" href="#/" aria-label="Retour">‹</a><div class="gros"><h1>${esc(c.nom)}</h1>
-      <div class="sous">${n} sur ${base.length} · ${pct(n, base.length)} %</div></div></div>
+      <div class="sous">${n} sur ${base.length} · ${pctAff(n, base.length)} %</div></div>
+      <button class="vol ${enCours === cid ? "on" : ""}" id="encours" aria-pressed="${enCours === cid}" title="Voyage en cours">✈</button></div>
+    <div class="jauge grande"><i style="width:${ratio(n, base.length)}%"></i></div>
     <div class="groupes">${tuiles}</div>
     <div class="puces">${filtres}</div>
     <input class="recherche" type="search" placeholder="Chercher un animal…" value="${esc(etat.q)}" aria-label="Chercher">
     <div id="liste"></div>`;
+  document.getElementById("encours").onclick = () => { definirEnCours(cid); carnet(cid); };
   app.querySelectorAll(".groupe").forEach((b) => b.onclick = () => { etat.groupe = etat.groupe === b.dataset.g ? "tous" : b.dataset.g; carnet(cid); });
   app.querySelectorAll(".puce").forEach((b) => b.onclick = () => { etat.filtre = b.dataset.f; carnet(cid); });
   app.querySelector(".recherche").oninput = (ev) => { etat.q = ev.target.value; liste(cid); };
@@ -186,10 +222,15 @@ function reglages() {
     <div class="bloc"><h4>Hors ligne</h4><p>L'appli marche sans réseau. Pour être sûre d'avoir toutes les photos en voyage, télécharge-les une fois avec le Wi-Fi.</p>
       <button class="btn petit" id="photos">Télécharger toutes les photos</button>
       <progress id="prog" value="0" max="1" hidden></progress><div class="msg" id="msg2"></div></div>
+    <div class="bloc"><h4>Thème</h4><p>Change l'ambiance de l'appli. « Carnet de naturaliste » est le style d'origine.</p>
+      <select class="choix" id="theme" aria-label="Thème"></select></div>
+    <div class="bloc"><h4>Mise à jour</h4><p>L'appli cherche toute seule une nouvelle version quand tu l'ouvres, et te prévient. Tu peux aussi la chercher toi-même.</p>
+      <button class="btn petit" id="maj">Chercher une mise à jour</button><div class="msg" id="msg3"></div>
+      <p class="petite">Version installée : <span id="vinst">${esc(self.VERSION || "dev")}</span></p></div>
     <div class="bloc"><h4>À propos</h4><p>${ESP.length} animaux, ${CARNETS.length} carnets.</p>
       <p class="petite">Les fiches ont été rédigées sans source vérifiée : elles peuvent contenir des erreurs. Photos : Wikimedia Commons, licences libres, auteurs crédités sous chaque photo. Version ${esc(self.VERSION || "dev")}.</p></div>`;
   document.getElementById("sauve").onclick = () => {
-    const blob = new Blob([JSON.stringify({ appli: "carnet", date: aujourdhui(), vus: vus() }, null, 1)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ appli: "carnet", date: aujourdhui(), vus: vus(), encours: enCours }, null, 1)], { type: "application/json" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "mes-observations-" + aujourdhui() + ".json";
     document.body.appendChild(a); a.click(); a.remove();
     document.getElementById("msg1").textContent = "Sauvegarde téléchargée.";
@@ -204,10 +245,26 @@ function reglages() {
       let ajoutes = 0;
       for (const [id, x] of Object.entries(d.vus)) if (PAR_ID[id] && !m[id]) { m[id] = x; ajoutes++; }
       ecrireVus(m);
+      if (d.encours && !enCours && CARNETS.some((c) => c.id === d.encours)) definirEnCours(d.encours);
       document.getElementById("msg1").textContent = ajoutes + " observation" + (ajoutes > 1 ? "s" : "") + " récupérée" + (ajoutes > 1 ? "s" : "") + ".";
     } catch (err) { document.getElementById("msg1").textContent = "Ce fichier n'est pas une sauvegarde valide."; }
   };
   document.getElementById("photos").onclick = telechargerPhotos;
+  remplirThemes(document.getElementById("theme"));
+  document.getElementById("maj").onclick = () => {
+    const b = document.getElementById("maj"); b.textContent = "Vérification…";
+    chercherMaj(true).then(() => { const x = document.getElementById("maj"); if (x) x.textContent = "Chercher une mise à jour"; });
+  };
+  versionInstallee().then((v) => { const e = document.getElementById("vinst"); if (e && v) e.textContent = v; });
+}
+
+function remplirThemes(sel) {
+  const actuel = themeChoisi();
+  const groupes = typeof CATEGORIES_THEMES !== "undefined" ? CATEGORIES_THEMES : [];
+  sel.innerHTML = `<option value="carnet"${actuel === "carnet" ? " selected" : ""}>Carnet de naturaliste (par défaut)</option>` +
+    groupes.map(([cat, ts]) => `<optgroup label="${esc(cat)}">${Object.entries(ts).filter(([k]) => k !== "auto")
+      .map(([k, l]) => `<option value="${k}"${k === actuel ? " selected" : ""}>${esc(l)}</option>`).join("")}</optgroup>`).join("");
+  sel.onchange = () => { try { localStorage.setItem("carnet.theme", sel.value); } catch (e) { /* tant pis : valable pour cette page */ } appliquerTheme(); };
 }
 
 async function telechargerPhotos() {
@@ -242,5 +299,58 @@ async function demarrer() {
   PAR_ID = Object.fromEntries(ESP.map((e) => [e.id, e]));
   route();
 }
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+/* ---------- mises à jour : la nouvelle version s'installe en fond, l'utilisatrice redémarre quand elle veut ---------- */
+let enregistrement = null, majDemandee = false;
+function bandeauMaj(w) {
+  if (document.querySelector(".bandeau-maj")) return;
+  const d = document.createElement("div");
+  d.className = "bandeau-maj";
+  d.innerHTML = `<span><b>Nouvelle version disponible</b>Redémarre l'appli pour l'avoir.</span><button id="redem">Redémarrer</button>`;
+  document.body.appendChild(d);
+  d.querySelector("#redem").onclick = () => {
+    majDemandee = true;
+    d.querySelector("#redem").textContent = "…";
+    const cible = w || (enregistrement && enregistrement.waiting);
+    if (cible) cible.postMessage({ type: "MAJ" });
+    setTimeout(() => location.reload(), 4000);   // filet de sécurité si le nouveau service worker tarde
+  };
+}
+function suivreInstallation(w) {
+  if (!w) return;
+  const verif = () => { if (w.state === "installed" && navigator.serviceWorker.controller) bandeauMaj(w); };
+  verif(); w.addEventListener("statechange", verif);
+}
+function versionInstallee() {
+  return new Promise((ok) => {
+    const c = navigator.serviceWorker && navigator.serviceWorker.controller;
+    if (!c) return ok(null);
+    const canal = new MessageChannel();
+    canal.port1.onmessage = (e) => ok(e.data);
+    c.postMessage({ type: "VERSION" }, [canal.port2]);
+    setTimeout(() => ok(null), 1500);
+  });
+}
+function messageMaj(t) { const m = document.getElementById("msg3"); if (m) m.textContent = t; }
+function chercherMaj(manuel) {
+  if (!enregistrement) { if (manuel) messageMaj("Vérification impossible ici (appli pas ouverte depuis internet)."); return Promise.resolve(); }
+  return enregistrement.update().then(() => {
+    if (!manuel) return;
+    if (enregistrement.waiting) { bandeauMaj(enregistrement.waiting); messageMaj("Mise à jour trouvée : touche « Redémarrer »."); }
+    else if (enregistrement.installing) messageMaj("Mise à jour trouvée : téléchargement en cours…");
+    else messageMaj("Tu as déjà la dernière version.");
+  }).catch(() => { if (manuel) messageMaj("Pas de connexion internet : réessaie plus tard."); });
+}
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  navigator.serviceWorker.register("sw.js").then((reg) => {
+    enregistrement = reg;
+    if (reg.waiting && navigator.serviceWorker.controller) bandeauMaj(reg.waiting);
+    reg.addEventListener("updatefound", () => suivreInstallation(reg.installing));
+    reg.update().catch(() => {});   // à chaque ouverture
+  }).catch(() => {});
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (majDemandee) location.reload(); });
+  let derniere = 0;   // et à chaque retour dans l'appli (au plus une fois toutes les 10 min)
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && Date.now() - derniere > 600000) { derniere = Date.now(); chercherMaj(false); }
+  });
+}
 demarrer();
