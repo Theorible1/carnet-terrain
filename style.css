@@ -175,3 +175,8 @@ select.choix { width: 100%; padding: 10px 12px; border: 1px solid var(--trait); 
 .installer b { display: block; font-family: var(--titre); font-size: 18px; }
 .installer span { display: block; font-size: 13px; color: var(--encre-douce); }
 .installer .btn { width: auto; margin: 0; padding: 10px 16px; flex: none; }
+.installer.col { flex-direction: column; align-items: stretch; gap: 8px; }
+.installer .ligne { display: flex; align-items: center; gap: 12px; }
+.installer .ligne > div { flex: 1; min-width: 0; }
+.installer ol.etapes { margin: 4px 0 0; padding-left: 20px; font-size: 14px; }
+.installer ol.etapes li { margin: 3px 0; }

@@ -307,29 +307,39 @@ async function demarrer() {
 /* ---------- installation sur le téléphone ---------- */
 let invitInstall = null;   // événement « beforeinstallprompt » de Chrome, quand il juge l'appli installable
 const dejaInstallee = () => (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+let aideInstallOuverte = false, messageInstall = "";
+function etapesInstall() {
+  const ua = navigator.userAgent;
+  if (/iphone|ipad|ipod/i.test(ua)) return ["Touche le bouton Partager (le carré avec une flèche vers le haut).", "Choisis « Sur l'écran d'accueil », puis « Ajouter »."];
+  if (/android/i.test(ua)) return ["Touche le menu ⋮ (en haut à droite de Chrome).", "Choisis « Installer l'application » (ou « Ajouter à l'écran d'accueil »), puis confirme."];
+  return ["Cherche l'icône d'installation à droite de la barre d'adresse (un écran avec une flèche, ou ⊕).", "Sinon, menu ⋮ > « Enregistrer et partager » > « Installer… » (Chrome), ou menu ⋯ > « Applications » > « Installer ce site » (Edge)."];
+}
 function afficherInstall() {
   document.querySelectorAll("[data-inst]").forEach((zone) => {
-    if (dejaInstallee()) { zone.innerHTML = ""; return; }
-    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const aide = ios
-      ? "Touche le bouton Partager (le carré avec une flèche), puis « Sur l'écran d'accueil »."
-      : "Touche le menu ⋮ du navigateur (en haut à droite), puis « Installer l'application » ou « Ajouter à l'écran d'accueil ».";
-    zone.innerHTML = `<div class="installer"><div><b>📲 Installer sur le téléphone</b>
-      <span>${invitInstall ? "L'appli aura son icône et marchera sans réseau." : esc(aide)}</span></div>
-      ${invitInstall ? '<button class="btn petit" data-act="installer">Installer</button>' : ""}</div>`;
-    const b = zone.querySelector('[data-act="installer"]');
-    if (b) b.onclick = async () => {
+    if (dejaInstallee()) { zone.innerHTML = `<div class="installer"><div><b>📲 Appli installée</b><span>Elle est sur l'écran d'accueil de ce téléphone.</span></div></div>`; return; }
+    const etapes = etapesInstall();
+    const detail = aideInstallOuverte || !invitInstall
+      ? `<ol class="etapes">${etapes.map((e) => `<li>${esc(e)}</li>`).join("")}</ol>
+         <span class="petite">Si rien ne s'affiche, ton navigateur ne propose pas l'installation automatique : utilise ces étapes.</span>` : "";
+    zone.innerHTML = `<div class="installer col"><div class="ligne"><div><b>📲 Installer sur le téléphone</b>
+      <span>${invitInstall ? "L'appli aura son icône et marchera sans réseau." : "Pour avoir l'icône et le mode sans réseau."}</span></div>
+      <button class="btn petit" data-act="installer">Installer</button></div>
+      ${messageInstall ? `<div class="msg">${esc(messageInstall)}</div>` : ""}${detail}</div>`;
+    zone.querySelector('[data-act="installer"]').onclick = async () => {
       const inv = invitInstall;
-      if (!inv) return;
+      if (!inv) { aideInstallOuverte = true; messageInstall = "Ton navigateur n'a pas encore proposé l'installation : voici comment faire à la main."; afficherInstall(); return; }
       inv.prompt();
-      try { await inv.userChoice; } catch (e) { /* refusé ou fermé */ }
+      let choix = null;
+      try { choix = await inv.userChoice; } catch (e) { /* fermé */ }
       invitInstall = null;   // une invitation ne sert qu'une fois
+      if (choix && choix.outcome === "accepted") messageInstall = "Installation en cours…";
+      else { aideInstallOuverte = true; messageInstall = "Pas installée. Tu peux le faire à la main :"; }
       afficherInstall();
     };
   });
 }
 window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); invitInstall = e; afficherInstall(); });
-window.addEventListener("appinstalled", () => { invitInstall = null; afficherInstall(); });
+window.addEventListener("appinstalled", () => { invitInstall = null; messageInstall = ""; afficherInstall(); });
 
 /* ---------- mises à jour : la nouvelle version s'installe en fond, l'utilisatrice redémarre quand elle veut ---------- */
 let enregistrement = null, majDemandee = false;
