@@ -123,7 +123,7 @@ function accueil() {
       <button class="vol ${cours ? "on" : ""}" data-c="${c.id}" aria-pressed="${cours}" aria-label="Voyage en cours : ${esc(c.nom)}" title="Voyage en cours">${ico(cours ? "voyage_sombre" : "voyage")}</button></div>`;
   }).join("");
   app.innerHTML = `<div class="barre"><div class="gros"><h1>${ico("rose_des_vents", "rose")}Mes carnets de voyage</h1><div class="sous">toutes les bêtes croisées en route</div></div>
-      <a class="rouage" href="#/reglages" aria-label="Réglages">⚙</a></div>
+      <a class="rouage" href="#/reglages" aria-label="Réglages">${ico("reglages")}</a></div>
     <div class="total"><b>${pctAff(vusTotal, total)} %</b><span>${vusTotal} espèce${vusTotal > 1 ? "s" : ""} observée${vusTotal > 1 ? "s" : ""} sur ${total}</span></div>
     <div class="jauge grande"><i style="width:${ratio(vusTotal, total)}%"></i></div>
     <div class="aide">Touche ${ico("voyage", "mini")} sur un carnet pour dire que tu y voyages : il passe en haut.</div><div data-inst></div>${cartes}`;
@@ -196,7 +196,7 @@ function fiche(id, cid) {
   app.innerHTML = `<div class="barre"><a class="retour" href="#/carnet/${cid}" aria-label="Retour">${RETOUR}</a><div class="gros"><h1>${esc(e.nom_fr)}</h1>
       <div class="nomsci">${esc(e.nom_scientifique)}</div></div></div>
     ${gal.html}
-    <div class="infos"><span class="info">📏 ${esc(e.taille)}</span>
+    <div class="infos"><span class="info">${ico("taille", "mini")} ${esc(e.taille)}</span>
       ${pp.rarete ? `<span class="info ${pp.rarete === "rare" ? "rare-e" : ""}">${esc(RARETE[pp.rarete] || pp.rarete)}</span>` : ""}
       <span class="info">${esc(UICN[e.statut_uicn] || e.statut_uicn)}</span></div>
     ${e.doute ? `<div class="doute">À vérifier : ${esc(e.doute)}</div>` : ""}

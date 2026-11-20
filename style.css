@@ -253,3 +253,6 @@ img.ico.drap { height: 20px; width: auto; margin: -3px 8px 0 0; border-radius: 2
 .vignette img.embleme { width: 46%; height: auto; max-height: 80%; object-fit: contain; }
 .photo img.embleme { position: absolute; left: 50%; top: 50%; width: 34%; height: auto; transform: translate(-50%, -50%); }
 img.ico.rose { width: 40px; height: 40px; margin: -6px 8px 0 0; }
+
+.rouage img.ico { width: 30px; height: 30px; display: block; }
+.info img.ico.mini { width: 18px; height: 18px; vertical-align: -3px; }
