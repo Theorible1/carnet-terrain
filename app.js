@@ -11,11 +11,11 @@ const CARNETS = [
   { id: "costa_rica", nom: "Costa Rica", couleur: "#7d8a3a" },
 ];
 const GROUPES = [
-  { id: "mammiferes", nom: "Mammifères", court: "Mammifères", emb: "🐾" },
-  { id: "oiseaux", nom: "Oiseaux", court: "Oiseaux", emb: "🐦" },
-  { id: "reptiles_amphibiens", nom: "Reptiles et amphibiens", court: "Reptiles", emb: "🦎" },
-  { id: "insectes_araignees", nom: "Insectes et araignées", court: "Insectes", emb: "🦋" },
-  { id: "vie_marine", nom: "Vie marine", court: "Vie marine", emb: "🐠" },
+  { id: "mammiferes", nom: "Mammifères", court: "Mammifères" },
+  { id: "oiseaux", nom: "Oiseaux", court: "Oiseaux" },
+  { id: "reptiles_amphibiens", nom: "Reptiles et amphibiens", court: "Reptiles" },
+  { id: "insectes_araignees", nom: "Insectes et araignées", court: "Insectes" },
+  { id: "vie_marine", nom: "Vie marine", court: "Vie marine" },
 ];
 const UICN = { LC: "Non menacé", NT: "Quasi menacé", VU: "Vulnérable", EN: "En danger", CR: "En danger critique", DD: "Données insuffisantes" };
 const RARETE = { commun: "Commun", peu_commun: "Peu commun", rare: "Rare" };
@@ -62,7 +62,10 @@ appliquerTheme();
 /* ---------- utilitaires ---------- */
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const nomCarnet = (id) => (CARNETS.find((c) => c.id === id) || {}).nom || id;
-const groupeInfo = (id) => GROUPES.find((g) => g.id === id) || { nom: id, emb: "🐾" };
+const groupeInfo = (id) => GROUPES.find((g) => g.id === id) || { id: "mammiferes", nom: id };
+/* Icônes dessinées par Quentin (dossier icones). Une icône = une petite image ; alt vide : le texte à côté dit déjà la même chose. */
+const ico = (nom, classe = "") => `<img class="ico ${classe}" src="icones/${nom}.png" alt="" aria-hidden="true">`;
+const RETOUR = ico("retour", "fleche");
 const dateFr = (iso) => { try { return new Date(iso + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }); } catch (e) { return iso; } };
 const aujourdhui = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
 const ratio = (a, b) => (b ? (100 * a) / b : 0);
@@ -78,13 +81,13 @@ const sans = (s) => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCa
 function vignette(e) {
   const g = groupeInfo(e.groupe);
   const p = (e.photos || [])[0];
-  return p ? `<img src="${esc(p.f)}" alt="${esc(e.nom_fr)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'embleme',textContent:'${g.emb}'}))">` : `<span class="embleme">${g.emb}</span>`;
+  return p ? `<img src="${esc(p.f)}" alt="${esc(e.nom_fr)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('img'),{className:'embleme',src:'icones/${g.id}.png',alt:''}))">` : `<img class="embleme" src="icones/${g.id}.png" alt="">`;
 }
 
 /* Photos de la fiche : défilement horizontal au doigt, points, auteur de la photo affichée. */
 function galerie(e) {
   const ph = e.photos || [];
-  if (!ph.length) return { html: `<div class="photo"><span class="coin a"></span><span class="coin b"></span><span class="embleme">${groupeInfo(e.groupe).emb}</span></div><div class="credit"></div>` };
+  if (!ph.length) return { html: `<div class="photo"><span class="coin a"></span><span class="coin b"></span><img class="embleme" src="icones/${groupeInfo(e.groupe).id}.png" alt=""></div><div class="credit"></div>` };
   const imgs = ph.map((p, i) => `<img src="${esc(p.f)}" alt="${esc(e.nom_fr)}, photo ${i + 1}" ${i ? 'loading="lazy"' : ""}>`).join("");
   const points = ph.length > 1 ? `<div class="points">${ph.map((_, i) => `<i class="${i ? "" : "on"}"></i>`).join("")}</div>` : "";
   return { html: `<div class="photo"><span class="coin a"></span><span class="coin b"></span><div class="defile" id="defile">${imgs}</div>${points}</div>
@@ -113,17 +116,17 @@ function accueil() {
   const cartes = lignes.map(({ c, l, n }) => {
     const cours = c.id === enCours;
     return `<div class="carnet ${cours ? "cours" : ""}"><div class="tranche" style="background:${c.couleur}"></div>
-      <a class="corps" href="#/carnet/${c.id}"><h3>${esc(c.nom)}</h3>
-      ${cours ? '<div class="etiquette">✈ voyage en cours</div>' : ""}
+      <a class="corps" href="#/carnet/${c.id}"><h3>${ico(c.id, "drap")}${esc(c.nom)}</h3>
+      ${cours ? `<div class="etiquette">${ico("voyage", "mini")} voyage en cours</div>` : ""}
       <div class="jauge"><i style="width:${ratio(n, l.length)}%"></i></div>
       <div class="chiffres">${n} / ${l.length} · ${pctAff(n, l.length)} %</div></a>
-      <button class="vol ${cours ? "on" : ""}" data-c="${c.id}" aria-pressed="${cours}" aria-label="Voyage en cours : ${esc(c.nom)}" title="Voyage en cours">✈</button></div>`;
+      <button class="vol ${cours ? "on" : ""}" data-c="${c.id}" aria-pressed="${cours}" aria-label="Voyage en cours : ${esc(c.nom)}" title="Voyage en cours">${ico(cours ? "voyage_sombre" : "voyage")}</button></div>`;
   }).join("");
   app.innerHTML = `<div class="barre"><div class="gros"><h1>Mes carnets de voyage</h1><div class="sous">toutes les bêtes croisées en route</div></div>
       <a class="rouage" href="#/reglages" aria-label="Réglages">⚙</a></div>
     <div class="total"><b>${pctAff(vusTotal, total)} %</b><span>${vusTotal} espèce${vusTotal > 1 ? "s" : ""} observée${vusTotal > 1 ? "s" : ""} sur ${total}</span></div>
     <div class="jauge grande"><i style="width:${ratio(vusTotal, total)}%"></i></div>
-    <div class="aide">Touche ✈ sur un carnet pour dire que tu y voyages : il passe en haut.</div><div data-inst></div>${cartes}`;
+    <div class="aide">Touche ${ico("voyage", "mini")} sur un carnet pour dire que tu y voyages : il passe en haut.</div><div data-inst></div>${cartes}`;
   app.querySelectorAll(".vol").forEach((b) => b.onclick = () => { definirEnCours(b.dataset.c); accueil(); });
   afficherInstall();
 }
@@ -134,16 +137,16 @@ function carnet(cid) {
   const base = especesDuCarnet(cid);
   const n = compteVus(base);
   // 6 boutons (Tous + 5 groupes) sur 2 lignes de 3 ; un groupe vide reste affiché (grisé) pour garder la grille.
-  const tuiles = [{ id: "tous", court: "Tous", emb: "📖" }, ...GROUPES].map((g) => {
+  const tuiles = [{ id: "tous", court: "Tous" }, ...GROUPES].map((g) => {
     const l = g.id === "tous" ? base : base.filter((e) => e.groupe === g.id);
-    return `<button class="groupe ${etat.groupe === g.id ? "on" : ""}" data-g="${g.id}" ${l.length ? "" : "disabled"}><span class="emo">${g.emb}</span><b>${esc(g.court)}</b>${compteVus(l)} / ${l.length}
+    return `<button class="groupe ${etat.groupe === g.id ? "on" : ""}" data-g="${g.id}" ${l.length ? "" : "disabled"}><span class="emo">${ico(g.id)}</span><b>${esc(g.court)}</b>${compteVus(l)} / ${l.length}
       <div class="jauge"><i style="width:${ratio(compteVus(l), l.length)}%"></i></div></button>`;
   }).join("");
   const filtres = [["tous", "Tous"], ["pasvu", "Pas encore vus"], ["vu", "Vus"], ["rare", "Rares"]]
     .map(([k, t]) => `<button class="puce ${etat.filtre === k ? "on" : ""}" data-f="${k}">${t}</button>`).join("");
-  app.innerHTML = `<div class="barre"><a class="retour" href="#/" aria-label="Retour">‹</a><div class="gros"><h1>${esc(c.nom)}</h1>
+  app.innerHTML = `<div class="barre"><a class="retour" href="#/" aria-label="Retour">${RETOUR}</a><div class="gros"><h1>${ico(c.id, "drap")}${esc(c.nom)}</h1>
       <div class="sous">${n} sur ${base.length} · ${pctAff(n, base.length)} %</div></div>
-      <button class="vol ${enCours === cid ? "on" : ""}" id="encours" aria-pressed="${enCours === cid}" title="Voyage en cours">✈</button></div>
+      <button class="vol ${enCours === cid ? "on" : ""}" id="encours" aria-pressed="${enCours === cid}" title="Voyage en cours">${ico(enCours === cid ? "voyage_sombre" : "voyage")}</button></div>
     <div class="jauge grande"><i style="width:${ratio(n, base.length)}%"></i></div>
     <div class="groupes">${tuiles}</div>
     <div class="puces">${filtres}</div>
@@ -170,13 +173,13 @@ function liste(cid) {
   l.sort(tri);
   const zone = document.getElementById("liste");
   if (!l.length) { zone.innerHTML = `<div class="vide">Rien à montrer ici pour l'instant.</div>`; return; }
-  const g = etat.groupe === "tous" ? { nom: "Tous les animaux", emb: "📖" } : groupeInfo(etat.groupe);
+  const g = etat.groupe === "tous" ? { id: "tous", nom: "Tous les animaux" } : groupeInfo(etat.groupe);
   const cartes = l.map((e) => {
     const vu = !!vus()[e.id];
-    return `<a class="esp ${vu ? "" : "pasvu"}" href="#/espece/${e.id}/${cid}"><div class="vignette">${vignette(e)}${vu ? '<span class="tampon">✓</span>' : ""}${rareteDans(e, cid) === "rare" ? '<span class="rare">rare</span>' : ""}${e.danger && DANGER[e.danger.niveau] ? `<span class="pastille d${e.danger.niveau}" title="${DANGER[e.danger.niveau]}"></span>` : ""}</div>
+    return `<a class="esp ${vu ? "" : "pasvu"}" href="#/espece/${e.id}/${cid}"><div class="vignette">${vignette(e)}${vu ? '<span class="tampon">${ico("vu")}</span>' : ""}${rareteDans(e, cid) === "rare" ? '<span class="rare">rare</span>' : ""}${e.danger && DANGER[e.danger.niveau] ? `<span class="pastille d${e.danger.niveau}" title="${DANGER[e.danger.niveau]}"></span>` : ""}</div>
       <div class="txt"><span class="nom">${esc(e.nom_fr)}</span><span class="fam">${esc(e.famille_simple)}</span></div></a>`;
   }).join("");
-  zone.innerHTML = `<h2 class="titre-liste">${g.emb} ${esc(g.nom)}</h2><div class="compte">${l.length} espèce${l.length > 1 ? "s" : ""} · touche une photo pour la fiche</div><div class="grille">${cartes}</div>`;
+  zone.innerHTML = `<h2 class="titre-liste">${ico(g.id, "titre")} ${esc(g.nom)}</h2><div class="compte">${l.length} espèce${l.length > 1 ? "s" : ""} · touche une photo pour la fiche</div><div class="grille">${cartes}</div>`;
 }
 
 function fiche(id, cid) {
@@ -190,7 +193,7 @@ function fiche(id, cid) {
   const confusions = (e.confusions || []).map((c) => `<div class="conf"><b>${esc(c.nom)}</b><span>${esc(c.difference)}</span></div>`).join("");
   const ligne = (ico, titre, texte) => texte ? `<div class="ligne-info"><span class="ico">${ico}</span><small>${titre}</small><span>${esc(texte)}</span></div>` : "";
   const onglets = e.pays.length > 1 ? `<div class="pays">${e.pays.map((p) => `<button class="${p === etat.pays ? "on" : ""}" data-p="${p}">${esc(nomCarnet(p))}</button>`).join("")}</div>` : "";
-  app.innerHTML = `<div class="barre"><a class="retour" href="#/carnet/${cid}" aria-label="Retour">‹</a><div class="gros"><h1>${esc(e.nom_fr)}</h1>
+  app.innerHTML = `<div class="barre"><a class="retour" href="#/carnet/${cid}" aria-label="Retour">${RETOUR}</a><div class="gros"><h1>${esc(e.nom_fr)}</h1>
       <div class="nomsci">${esc(e.nom_scientifique)}</div></div></div>
     ${gal.html}
     <div class="infos"><span class="info">📏 ${esc(e.taille)}</span>
@@ -201,11 +204,11 @@ function fiche(id, cid) {
     <button class="btn ${v ? "vu" : ""}" id="vu">${v ? "✓ Vu !" : "Je l'ai vu"}</button>
     <div class="date">${v ? "le " + esc(dateFr(v.date)) + (nbCarnets > 1 ? ", coché dans " + nbCarnets + " carnets" : "") : ""}</div>
     ${v ? `<div class="cadre"><h4>Mon mot</h4><textarea class="mot" id="mot" placeholder="Où, quand, avec qui…">${esc(v.note || "")}</textarea></div>` : ""}
-    <div class="cadre"><h4>🔍 Pour le reconnaître</h4><ul class="signes">${(e.signes || []).map((s) => `<li>${esc(s)}</li>`).join("")}</ul></div>
-    ${confusions ? `<div class="cadre"><h4>⚖️ À ne pas confondre avec</h4>${confusions}</div>` : ""}
-    <div class="cadre"><h4>🧭 Où le chercher</h4>${onglets}
-      ${ligne("🌿", "Milieu", e.habitat)}${ligne("📍", "Où", pp.ou_voir)}${ligne("🗓️", "Quand", pp.quand)}</div>
-    ${e.anecdote ? `<div class="note"><h4>Le saviez-vous ?</h4><p>${esc(e.anecdote)}</p></div>` : ""}
+    <div class="cadre"><h4>${ico("reconnaitre", "t")} Pour le reconnaître</h4><ul class="signes">${(e.signes || []).map((s) => `<li>${esc(s)}</li>`).join("")}</ul></div>
+    ${confusions ? `<div class="cadre"><h4>${ico("confondre", "t")} À ne pas confondre avec</h4>${confusions}</div>` : ""}
+    <div class="cadre"><h4>${ico("ou_chercher", "t")} Où le chercher</h4>${onglets}
+      ${ligne(ico("milieu"), "Milieu", e.habitat)}${ligne(ico("lieu"), "Où", pp.ou_voir)}${ligne(ico("quand"), "Quand", pp.quand)}</div>
+    ${e.anecdote ? `<div class="note"><h4>${ico("saviez_vous", "t")} Le saviez-vous ?</h4><p>${esc(e.anecdote)}</p></div>` : ""}
     ${sourcesHtml(e)}`;
   brancherGalerie(gal.ph);
   app.querySelectorAll(".pays button").forEach((b) => b.onclick = () => { etat.pays = b.dataset.p; fiche(id, cid); });
@@ -230,7 +233,7 @@ function sourcesHtml(e) {
 
 function reglages() {
   const nb = Object.keys(vus()).length;
-  app.innerHTML = `<div class="barre"><a class="retour" href="#/" aria-label="Retour">‹</a><div class="gros"><h1>Réglages</h1></div></div>
+  app.innerHTML = `<div class="barre"><a class="retour" href="#/" aria-label="Retour">${RETOUR}</a><div class="gros"><h1>Réglages</h1></div></div>
     <div class="bloc"><h4>Mes observations</h4><p>${nb} animal${nb > 1 ? "ux" : ""} coché${nb > 1 ? "s" : ""}. Les coches sont gardées sur ce téléphone. Pense à faire une sauvegarde de temps en temps, surtout avant de changer de téléphone ou d'effacer les données du navigateur.</p>
       <button class="btn petit" id="sauve">Sauvegarder mes coches</button>
       <button class="btn petit" id="restaure">Restaurer une sauvegarde</button>
@@ -246,7 +249,7 @@ function reglages() {
       <button class="btn petit" id="maj">Chercher une mise à jour</button><div class="msg" id="msg3"></div>
       <p class="petite">Version installée : <span id="vinst">${esc(self.VERSION || "dev")}</span></p></div>
     <div class="bloc"><h4>À propos</h4><p>${ESP.length} animaux, ${CARNETS.length} carnets.</p>
-      <p class="petite">Les fiches ont été rédigées sans source vérifiée : elles peuvent contenir des erreurs. Photos : Wikimedia Commons, licences libres, auteurs crédités sous chaque photo. Version ${esc(self.VERSION || "dev")}.</p></div>`;
+      <p class="petite">Les fiches ont été rédigées sans source vérifiée : elles peuvent contenir des erreurs. Photos : iNaturalist, licences libres, auteurs crédités sous chaque photo. Version ${esc(self.VERSION || "dev")}.</p></div>`;
   document.getElementById("sauve").onclick = () => {
     const blob = new Blob([JSON.stringify({ appli: "carnet", date: aujourdhui(), vus: vus(), encours: enCours }, null, 1)], { type: "application/json" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "mes-observations-" + aujourdhui() + ".json";

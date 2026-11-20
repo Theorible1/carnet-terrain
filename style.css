@@ -179,6 +179,17 @@ textarea.mot { width: 100%; min-height: 76px; padding: 10px 12px; border: 1px so
 .bloc p { margin: 4px 0 8px; font-size: 14px; }
 .msg { font-family: var(--main); color: var(--vert); min-height: 20px; margin-top: 4px; }
 .petite { font-size: 12px; color: var(--encre-douce); }
+/* Réglages plus lisibles (demande de Quentin du 20/11 : deux tailles au-dessus, cette page seulement) */
+.bloc h4 { font-size: 25px; }
+.bloc p { font-size: 18px; line-height: 1.45; }
+.bloc .btn.petit { font-size: 26px; padding: 12px; }
+.bloc .installer b { font-size: 22px; }
+.bloc .installer span { font-size: 16px; }
+.bloc .installer .btn { font-size: 24px; }
+.bloc .installer ol.etapes { font-size: 17px; }
+.bloc .msg { font-size: 19px; }
+.bloc .petite { font-size: 15px; }
+.bloc select.choix { font-size: 18px; }
 progress { width: 100%; height: 10px; accent-color: var(--vert); }
 
 /* Thèmes de THEMATOR3000 : quand un thème est choisi (attribut data-theme), nos variables prennent ses couleurs. */
@@ -223,3 +234,21 @@ select.choix { width: 100%; padding: 10px 12px; border: 1px solid var(--trait); 
 .installer ol.etapes li { margin: 3px 0; }
 
 .sources a { color: var(--bleu); text-decoration: underline; }
+
+/* Icônes dessinées par Quentin (dossier icones) */
+img.ico { display: inline-block; vertical-align: middle; object-fit: contain; flex: none; }
+.groupe .emo img.ico { width: 38px; height: 38px; margin: 0 auto; }
+.titre-liste img.ico { width: 34px; height: 34px; margin: -4px 4px 0 0; }
+.cadre h4 img.ico, .note h4 img.ico { width: 28px; height: 28px; margin: -4px 4px 0 0; }
+.ligne-info img.ico { width: 30px; height: 30px; }
+.ligne-info .ico { font-size: 0; }
+img.ico.mini { width: 18px; height: 18px; margin: -3px 1px 0; }
+img.ico.drap { height: 20px; width: auto; margin: -3px 8px 0 0; border-radius: 2px; }
+.vol img.ico { width: 30px; height: 30px; }
+.retour img.ico { width: 30px; height: 30px; }
+.retour { display: inline-flex; align-items: center; padding-right: 10px; }
+.vol { filter: none; }
+.tampon { background: none; box-shadow: none; width: 38px; height: 38px; transform: rotate(-10deg); }
+.tampon img.ico { width: 38px; height: 38px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
+.vignette img.embleme { width: 46%; height: auto; max-height: 80%; object-fit: contain; }
+.photo img.embleme { position: absolute; left: 50%; top: 50%; width: 34%; height: auto; transform: translate(-50%, -50%); }

@@ -4,7 +4,9 @@
 importScripts("version.js");
 const CACHE = "carnet-" + self.VERSION;
 const COQUE = ["./", "index.html", "style.css", "app.js", "version.js", "themes.css", "themes.js", "manifest.webmanifest", "data/especes.json", "icons/icon-192.png", "icons/icon-512.png",
-  "fonts/caveat.woff2", "fonts/nunito.woff2", "fonts/nunito-italique.woff2"];
+  "icons/icon-maskable-512.png", "fonts/caveat.woff2", "fonts/nunito.woff2", "fonts/nunito-italique.woff2"]
+  .concat(["tous", "mammiferes", "oiseaux", "reptiles_amphibiens", "insectes_araignees", "vie_marine", "voyage", "voyage_sombre", "retour", "reconnaitre",
+    "confondre", "ou_chercher", "milieu", "lieu", "quand", "vu", "saviez_vous", "afrique_du_sud", "japon", "france", "thailande", "costa_rica"].map((n) => "icones/" + n + ".png"));
 
 self.addEventListener("install", (e) => {
   // Pas de skipWaiting ici : la nouvelle version s'installe en fond puis attend. L'appli affiche « Nouvelle version
