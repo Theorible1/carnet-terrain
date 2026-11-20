@@ -122,7 +122,7 @@ function accueil() {
       <div class="chiffres">${n} / ${l.length} · ${pctAff(n, l.length)} %</div></a>
       <button class="vol ${cours ? "on" : ""}" data-c="${c.id}" aria-pressed="${cours}" aria-label="Voyage en cours : ${esc(c.nom)}" title="Voyage en cours">${ico(cours ? "voyage_sombre" : "voyage")}</button></div>`;
   }).join("");
-  app.innerHTML = `<div class="barre"><div class="gros"><h1>Mes carnets de voyage</h1><div class="sous">toutes les bêtes croisées en route</div></div>
+  app.innerHTML = `<div class="barre"><div class="gros"><h1>${ico("rose_des_vents", "rose")}Mes carnets de voyage</h1><div class="sous">toutes les bêtes croisées en route</div></div>
       <a class="rouage" href="#/reglages" aria-label="Réglages">⚙</a></div>
     <div class="total"><b>${pctAff(vusTotal, total)} %</b><span>${vusTotal} espèce${vusTotal > 1 ? "s" : ""} observée${vusTotal > 1 ? "s" : ""} sur ${total}</span></div>
     <div class="jauge grande"><i style="width:${ratio(vusTotal, total)}%"></i></div>
