@@ -17,7 +17,7 @@ const GROUPES = [
   { id: "insectes_araignees", nom: "Insectes et araignées", court: "Insectes" },
   { id: "vie_marine", nom: "Vie marine", court: "Vie marine" },
 ];
-const UICN = { LC: "Non menacé", NT: "Quasi menacé", VU: "Vulnérable", EN: "En danger", CR: "En danger critique", DD: "Données insuffisantes" };
+const UICN = { LC: "Non menacé", NT: "Quasi menacé", VU: "Vulnérable", EN: "En danger", CR: "En danger critique", DD: "Données insuffisantes", NE: "Non évalué" };
 const RARETE = { commun: "Commun", peu_commun: "Peu commun", rare: "Rare" };
 /* Indice de danger (noms choisis par Quentin le 20/11/2026), avec une pastille de couleur. */
 const DANGER = { 1: "À papouiller sans retenue", 2: "Ouch, attention ça pique", 3: "En photo, c'était bien quand même", 4: "Fuis, cours pour ta vie" };
