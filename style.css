@@ -323,3 +323,15 @@ body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-event
 :root[data-pays="france"]:not([data-theme])         { --papier: #e8eef3; --papier-fonce: #d3dfe8; --vert: #3f6a94; }
 :root[data-pays="thailande"]:not([data-theme])      { --papier: #e6f1ea; --papier-fonce: #cfe3d6; --vert: #1f8573; }
 :root[data-pays="costa_rica"]:not([data-theme])     { --papier: #eef1dc; --papier-fonce: #dde4bb; --vert: #5f7f1f; }
+
+/* TEMPORAIRE : tri des photos (à retirer avec le mode) */
+.tri-esp { background: var(--carte); border: 1px solid var(--trait); border-radius: 10px; padding: 8px 10px; margin: 10px 0; }
+.tri-nom { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.tri-nom small { font-size: 13px; font-weight: 400; font-style: italic; color: var(--encre-douce); }
+.tri-liste { display: flex; flex-wrap: wrap; gap: 8px; }
+.tri-ph { position: relative; width: calc(50% - 4px); padding: 0; border: 4px solid transparent; border-radius: 10px; background: none; overflow: hidden; }
+.tri-ph img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; }
+.tri-ph .tri-x { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; font-size: 80px; color: #fff; background: rgba(200, 30, 30, .45); }
+.tri-ph.mauvaise { border-color: #c81e1e; }
+.tri-ph.mauvaise .tri-x { display: flex; }
+.tri-aucune { color: #c81e1e; font-size: 16px; }
