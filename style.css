@@ -323,6 +323,9 @@ body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-event
 :root[data-pays="france"]:not([data-theme])         { --papier: #e8eef3; --papier-fonce: #d3dfe8; --vert: #3f6a94; }
 :root[data-pays="thailande"]:not([data-theme])      { --papier: #e6f1ea; --papier-fonce: #cfe3d6; --vert: #1f8573; }
 :root[data-pays="costa_rica"]:not([data-theme])     { --papier: #eef1dc; --papier-fonce: #dde4bb; --vert: #5f7f1f; }
+:root[data-pays="royaume_uni"]:not([data-theme])    { --papier: #e9edf3; --papier-fonce: #d5dde9; --vert: #2f4f7f; }
+:root[data-pays="irlande"]:not([data-theme])        { --papier: #e7f1e6; --papier-fonce: #cfe3cc; --vert: #2f7a45; }
+:root[data-pays="etats_unis"]:not([data-theme])     { --papier: #f3e8e6; --papier-fonce: #e7d2cf; --vert: #a03a3a; }
 
 /* TEMPORAIRE : tri des photos (à retirer avec le mode) */
 .tri-esp { background: var(--carte); border: 1px solid var(--trait); border-radius: 10px; padding: 8px 10px; margin: 10px 0; }

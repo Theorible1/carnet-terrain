@@ -9,6 +9,9 @@ const CARNETS = [
   { id: "france", nom: "France et voisins", couleur: "#4f6f84" },
   { id: "thailande", nom: "Thaïlande", couleur: "#5f7a4a" },
   { id: "costa_rica", nom: "Costa Rica", couleur: "#7d8a3a" },
+  { id: "royaume_uni", nom: "Royaume-Uni", couleur: "#3f5a7a" },
+  { id: "irlande", nom: "Irlande", couleur: "#3f7a4f" },
+  { id: "etats_unis", nom: "États-Unis", couleur: "#9a4a4a" },
 ];
 const GROUPES = [
   { id: "mammiferes", nom: "Mammifères", court: "Mammifères" },
@@ -66,7 +69,7 @@ const groupeInfo = (id) => GROUPES.find((g) => g.id === id) || { id: "mammiferes
 /* Icônes : pastilles plates en SVG (dossier icones, fabriquées par outils/fabriquer_icones_svg.py). alt vide : le texte à côté dit déjà la même chose. */
 const ico = (nom, classe = "") => `<img class="ico ${classe}" src="icones/${nom}.svg" alt="" aria-hidden="true">`;
 /* Fond de page : un paysage plat par carnet (dossier fonds), posé derrière tout l'écran. Le décalage horizontal garde le sujet visible sur un écran étroit. */
-const FOND_POS = { afrique_du_sud: "50%", japon: "78%", france: "50%", thailande: "55%", costa_rica: "68%", accueil: "50%" };
+const FOND_POS = { afrique_du_sud: "50%", japon: "78%", france: "50%", thailande: "55%", costa_rica: "68%", royaume_uni: "50%", irlande: "50%", etats_unis: "50%", accueil: "50%" };
 function fond(id) {
   // Voyage en cours : tout l'habillage (paysage et couleurs) prend celui du pays coché, sur tous les écrans.
   const pays = enCours && CARNETS.some((c) => c.id === enCours) ? enCours : "";
@@ -324,7 +327,7 @@ async function telechargerPhotos() {
    Marque les mauvaises photos, clé "carnet.triphotos" = { "photos/xxx.jpg": true }, et télécharge la liste. */
 const triLire = () => { try { return JSON.parse(localStorage.getItem("carnet.triphotos") || "{}"); } catch (e) { return {}; } };
 const triEcrire = (m) => { try { localStorage.setItem("carnet.triphotos", JSON.stringify(m)); } catch (e) { /* tant pis */ } };
-let triCarnet = "afrique_du_sud";
+let triCarnet = "royaume_uni";
 
 function triPhotos() {
   fond("accueil");

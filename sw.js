@@ -6,8 +6,8 @@ const CACHE = "carnet-" + self.VERSION;
 const COQUE = ["./", "index.html", "style.css", "app.js", "version.js", "themes.css", "themes.js", "manifest.webmanifest", "data/especes.json", "icons/icon-192.png", "icons/icon-512.png",
   "icons/icon-maskable-512.png", "fonts/fredoka.woff2", "fonts/caveat.woff2", "fonts/nunito.woff2", "fonts/nunito-italique.woff2"]
   .concat(["tous", "mammiferes", "oiseaux", "reptiles_amphibiens", "insectes_araignees", "vie_marine", "voyage", "rose_des_vents", "taille", "reglages", "retour", "reconnaitre",
-    "confondre", "ou_chercher", "milieu", "lieu", "quand", "vu", "saviez_vous", "afrique_du_sud", "japon", "france", "thailande", "costa_rica"].map((n) => "icones/" + n + ".svg"))
-  .concat(["accueil", "afrique_du_sud", "japon", "france", "thailande", "costa_rica"].map((n) => "fonds/" + n + ".webp"));
+    "confondre", "ou_chercher", "milieu", "lieu", "quand", "vu", "saviez_vous", "afrique_du_sud", "japon", "france", "thailande", "costa_rica", "royaume_uni", "irlande", "etats_unis"].map((n) => "icones/" + n + ".svg"))
+  .concat(["accueil", "afrique_du_sud", "japon", "france", "thailande", "costa_rica", "royaume_uni", "irlande", "etats_unis"].map((n) => "fonds/" + n + ".webp"));
 
 self.addEventListener("install", (e) => {
   // Pas de skipWaiting ici : la nouvelle version s'installe en fond puis attend. L'appli affiche « Nouvelle version
