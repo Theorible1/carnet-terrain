@@ -68,9 +68,15 @@ const ico = (nom, classe = "") => `<img class="ico ${classe}" src="icones/${nom}
 /* Fond de page : un paysage plat par carnet (dossier fonds), posé derrière tout l'écran. Le décalage horizontal garde le sujet visible sur un écran étroit. */
 const FOND_POS = { afrique_du_sud: "50%", japon: "78%", france: "50%", thailande: "55%", costa_rica: "68%", accueil: "50%" };
 function fond(id) {
-  const r = document.documentElement.style;
-  r.setProperty("--fond-img", `url(fonds/${id}.webp)`);
-  r.setProperty("--fond-pos", (FOND_POS[id] || "50%") + " 50%");
+  // Voyage en cours : tout l'habillage (paysage et couleurs) prend celui du pays coché, sur tous les écrans.
+  const pays = enCours && CARNETS.some((c) => c.id === enCours) ? enCours : "";
+  if (pays) id = pays;
+  const racine = document.documentElement;
+  racine.style.setProperty("--fond-img", `url(fonds/${id}.webp)`);
+  racine.style.setProperty("--fond-pos", (FOND_POS[id] || "50%") + " 50%");
+  if (pays) racine.setAttribute("data-pays", pays); else racine.removeAttribute("data-pays");
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta && !racine.hasAttribute("data-theme")) meta.content = getComputedStyle(racine).getPropertyValue("--papier").trim() || "#f4ecd8";
 }
 const RETOUR = ico("retour", "fleche");
 const dateFr = (iso) => { try { return new Date(iso + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }); } catch (e) { return iso; } };

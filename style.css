@@ -316,3 +316,10 @@ body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-event
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='g' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .33  0 0 0 0 .18  0 0 0 .55 -.12'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>"); }
 #app { position: relative; z-index: 1; }
 :root[data-theme] body::before { display: none; }
+
+/* Voyage en cours : le pays coché habille toute l'appli (papier, cartes, couleur d'accent). Sans effet avec un thème de THEMATOR3000. */
+:root[data-pays="afrique_du_sud"]:not([data-theme]) { --papier: #f6e9d3; --papier-fonce: #ead7b4; --vert: #a0652a; }
+:root[data-pays="japon"]:not([data-theme])          { --papier: #f7e7e4; --papier-fonce: #ecd3cf; --vert: #b03a4e; }
+:root[data-pays="france"]:not([data-theme])         { --papier: #e8eef3; --papier-fonce: #d3dfe8; --vert: #3f6a94; }
+:root[data-pays="thailande"]:not([data-theme])      { --papier: #e6f1ea; --papier-fonce: #cfe3d6; --vert: #1f8573; }
+:root[data-pays="costa_rica"]:not([data-theme])     { --papier: #eef1dc; --papier-fonce: #dde4bb; --vert: #5f7f1f; }
