@@ -1,4 +1,5 @@
 /* Polices libres (OFL, Google Fonts), embarquées pour marcher sans réseau */
+@font-face { font-family: "Fredoka"; font-weight: 400 700; font-display: swap; src: url(fonts/fredoka.woff2) format("woff2"); }
 @font-face { font-family: "Caveat"; font-weight: 400 700; font-display: swap; src: url(fonts/caveat.woff2) format("woff2"); }
 @font-face { font-family: "Nunito"; font-weight: 400 800; font-display: swap; src: url(fonts/nunito.woff2) format("woff2"); }
 @font-face { font-family: "Nunito"; font-style: italic; font-weight: 400 800; font-display: swap; src: url(fonts/nunito-italique.woff2) format("woff2"); }
@@ -12,14 +13,15 @@
   --ocre: #b5793a;
   --rouge: #9c4a3a;
   --bleu: #4f6f84;
-  --titre: "Caveat", "Segoe Print", cursive;
-  --corps: "Nunito", "Segoe UI", Roboto, sans-serif;
+  --titre: "Fredoka", "Nunito", "Segoe UI", sans-serif;       /* titres */
+  --corps: "Nunito", "Segoe UI", Roboto, sans-serif;           /* tout le reste */
+  --manuscrit: "Caveat", "Segoe Print", cursive;               /* petites notes à la main seulement */
   --carte: rgba(255,255,255,.4);
   --carte-champ: rgba(255,255,255,.55);
   --carte-forte: rgba(255,255,255,.7);
   --piste: rgba(59,47,34,.12);
   --voile: rgba(59,47,34,.09);
-  --main: "Caveat", "Segoe Print", cursive;
+  --main: var(--corps);   /* petits textes : même police que le corps (la main reste pour .manu et le mot de l'observation) */
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; min-height: 100%; }
@@ -235,24 +237,82 @@ select.choix { width: 100%; padding: 10px 12px; border: 1px solid var(--trait); 
 
 .sources a { color: var(--bleu); text-decoration: underline; }
 
-/* Icônes dessinées par Quentin (dossier icones) */
+/* ===== Direction artistique v2 (22/11/2026) : pastilles plates, Fredoka pour les titres, bannières, grain de papier ===== */
+/* Icônes : pastilles plates en SVG (dossier icones) */
 img.ico { display: inline-block; vertical-align: middle; object-fit: contain; flex: none; }
-.groupe .emo img.ico { width: 38px; height: 38px; margin: 0 auto; }
-.titre-liste img.ico { width: 34px; height: 34px; margin: -4px 4px 0 0; }
-.cadre h4 img.ico, .note h4 img.ico { width: 28px; height: 28px; margin: -4px 4px 0 0; }
-.ligne-info img.ico { width: 30px; height: 30px; }
+.groupe .emo img.ico { width: 42px; height: 42px; margin: 0 auto; }
+.titre-liste img.ico { width: 30px; height: 30px; margin: -4px 6px 0 0; }
+.cadre h4 img.ico, .note h4 img.ico { width: 26px; height: 26px; margin: -3px 6px 0 0; }
+.ligne-info img.ico { width: 28px; height: 28px; }
 .ligne-info .ico { font-size: 0; }
 img.ico.mini { width: 18px; height: 18px; margin: -3px 1px 0; }
-img.ico.drap { height: 20px; width: auto; margin: -3px 8px 0 0; border-radius: 2px; }
-.vol img.ico { width: 30px; height: 30px; }
-.retour img.ico { width: 30px; height: 30px; }
-.retour { display: inline-flex; align-items: center; padding-right: 10px; }
-.vol { filter: none; }
-.tampon { background: none; box-shadow: none; width: 38px; height: 38px; transform: rotate(-10deg); }
-.tampon img.ico { width: 38px; height: 38px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
+img.ico.drap { width: 26px; height: 26px; margin: -2px 8px 0 0; }
+img.ico.rose { width: 32px; height: 32px; margin: 0 8px 0 0; }
+.barre h1 { line-height: 1.3; }
+.info img.ico.mini { width: 20px; height: 20px; vertical-align: -5px; }
+.retour { display: inline-flex; align-items: center; padding: 0 10px 0 0; }
+.retour img.ico { width: 38px; height: 38px; }
+.rouage { padding: 0; display: block; }
+.rouage img.ico { width: 38px; height: 38px; display: block; }
+/* « Voyage en cours » : pastille orange discrète quand éteinte, anneau vert quand allumée */
+.vol { background: none; border: 0; padding: 0; width: 46px; height: 46px; filter: none; opacity: 1; }
+.vol img.ico { width: 42px; height: 42px; filter: grayscale(.85); opacity: .55; transition: filter .15s, opacity .15s; }
+.vol.on { background: none; border: 0; }
+.vol.on img.ico { filter: none; opacity: 1; box-shadow: 0 0 0 3px var(--vert); border-radius: 50%; }
+.barre .vol { width: 44px; height: 44px; margin: 0; }
+.tampon { background: none; box-shadow: none; width: 40px; height: 40px; transform: rotate(-10deg); }
+.tampon img.ico { width: 40px; height: 40px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)); }
 .vignette img.embleme { width: 46%; height: auto; max-height: 80%; object-fit: contain; }
 .photo img.embleme { position: absolute; left: 50%; top: 50%; width: 34%; height: auto; transform: translate(-50%, -50%); }
-img.ico.rose { width: 40px; height: 40px; margin: -6px 8px 0 0; }
 
-.rouage img.ico { width: 30px; height: 30px; display: block; }
-.info img.ico.mini { width: 18px; height: 18px; vertical-align: -3px; }
+/* Catégorie choisie : carte claire cerclée de vert (le fond vert mangeait la pastille verte des reptiles) */
+.groupe.on { background: var(--carte-forte); border: 2px solid var(--vert); color: var(--encre-douce); padding: 5px 3px 4px; box-shadow: 0 2px 6px rgba(0,0,0,.14); }
+.groupe.on b { color: var(--encre); }
+.groupe.on .jauge { background: var(--piste); }
+.groupe.on .jauge i { background: var(--vert); }
+
+/* Barre du haut : pleine largeur et légèrement transparente, pour ne pas faire de bande visible sur le fond grainé */
+.barre { margin: 0 -16px; padding-left: 16px; padding-right: 16px; background: linear-gradient(color-mix(in srgb, var(--papier) 93%, transparent) 70%, transparent); }
+.bloc h4 { margin-top: 2px; }
+
+/* Fond de page : le paysage du carnet, fixe derrière tout, sous un voile couleur papier (plus dense vers le bas, là où se lit le texte) */
+html::before { content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background: var(--fond-img, none) var(--fond-pos, 50% 50%) / cover no-repeat; }
+html::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(color-mix(in srgb, var(--papier) 18%, transparent), color-mix(in srgb, var(--papier) 62%, transparent) 40%, color-mix(in srgb, var(--papier) 80%, transparent)); }
+:root[data-theme]::before, :root[data-theme]::after { display: none; }
+/* Par-dessus un paysage, les cartes et les puces sont plus opaques */
+:root:not([data-theme]) { --carte: rgba(255,252,243,.78); --carte-champ: rgba(255,252,243,.88); --carte-forte: rgba(255,252,243,.94); }
+:root:not([data-theme]) .puce { background: var(--carte-forte); }
+:root:not([data-theme]) .puce.on { background: var(--encre); }
+:root:not([data-theme]) .btn:not(.vu) { background: var(--carte-forte); }
+:root:not([data-theme]) .barre { background: linear-gradient(color-mix(in srgb, var(--papier) 55%, transparent) 60%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.aide, .compte { color: var(--encre); }
+
+/* Titres en Fredoka (plus large que Caveat : tailles revues) ; Caveat reste pour le mot de l'observation et le petit mot de l'accueil */
+h1 { font-size: 25px; font-weight: 600; letter-spacing: -.01em; line-height: 1.15; }
+.total b { font-size: 42px; font-weight: 600; }
+.carnet h3 { font-size: 19px; font-weight: 600; }
+.titre-liste { font-size: 21px; font-weight: 600; }
+.esp .nom { font-size: 16px; font-weight: 600; line-height: 1.15; }
+.danger b { font-size: 17px; font-weight: 600; line-height: 1.2; }
+.conf b { font-size: 15.5px; font-weight: 600; }
+h4, .cadre h4 { font-size: 17px; font-weight: 600; }
+.note h4 { font-size: 17px; }
+.sources-bloc summary { font-size: 16px; font-weight: 600; }
+.btn { font-size: 18px; font-weight: 600; }
+.btn.petit { font-size: 16px; }
+.installer b { font-size: 16px; font-weight: 600; }
+.bloc h4 { font-size: 20px; }
+.bloc .btn.petit { font-size: 19px; padding: 12px; }
+.bloc .installer b { font-size: 19px; }
+.bloc .installer .btn { font-size: 19px; }
+.sous.manu { font-family: var(--manuscrit); font-size: 19px; line-height: 1.1; }
+textarea.mot { font-family: var(--manuscrit); font-size: 19px; }
+.aide { font-size: 13.5px; }
+
+/* Grain de papier (très léger, par-dessus le fond ; absent avec un thème de THEMATOR3000) */
+body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .5; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='g' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .33  0 0 0 0 .18  0 0 0 .55 -.12'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>"); }
+#app { position: relative; z-index: 1; }
+:root[data-theme] body::before { display: none; }

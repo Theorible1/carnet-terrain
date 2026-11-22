@@ -63,8 +63,15 @@ appliquerTheme();
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const nomCarnet = (id) => (CARNETS.find((c) => c.id === id) || {}).nom || id;
 const groupeInfo = (id) => GROUPES.find((g) => g.id === id) || { id: "mammiferes", nom: id };
-/* Icônes dessinées par Quentin (dossier icones). Une icône = une petite image ; alt vide : le texte à côté dit déjà la même chose. */
-const ico = (nom, classe = "") => `<img class="ico ${classe}" src="icones/${nom}.png" alt="" aria-hidden="true">`;
+/* Icônes : pastilles plates en SVG (dossier icones, fabriquées par outils/fabriquer_icones_svg.py). alt vide : le texte à côté dit déjà la même chose. */
+const ico = (nom, classe = "") => `<img class="ico ${classe}" src="icones/${nom}.svg" alt="" aria-hidden="true">`;
+/* Fond de page : un paysage plat par carnet (dossier fonds), posé derrière tout l'écran. Le décalage horizontal garde le sujet visible sur un écran étroit. */
+const FOND_POS = { afrique_du_sud: "50%", japon: "78%", france: "50%", thailande: "55%", costa_rica: "68%", accueil: "50%" };
+function fond(id) {
+  const r = document.documentElement.style;
+  r.setProperty("--fond-img", `url(fonds/${id}.webp)`);
+  r.setProperty("--fond-pos", (FOND_POS[id] || "50%") + " 50%");
+}
 const RETOUR = ico("retour", "fleche");
 const dateFr = (iso) => { try { return new Date(iso + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }); } catch (e) { return iso; } };
 const aujourdhui = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
@@ -81,13 +88,13 @@ const sans = (s) => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCa
 function vignette(e) {
   const g = groupeInfo(e.groupe);
   const p = (e.photos || [])[0];
-  return p ? `<img src="${esc(p.f)}" alt="${esc(e.nom_fr)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('img'),{className:'embleme',src:'icones/${g.id}.png',alt:''}))">` : `<img class="embleme" src="icones/${g.id}.png" alt="">`;
+  return p ? `<img src="${esc(p.f)}" alt="${esc(e.nom_fr)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('img'),{className:'embleme',src:'icones/${g.id}.svg',alt:''}))">` : `<img class="embleme" src="icones/${g.id}.svg" alt="">`;
 }
 
 /* Photos de la fiche : défilement horizontal au doigt, points, auteur de la photo affichée. */
 function galerie(e) {
   const ph = e.photos || [];
-  if (!ph.length) return { html: `<div class="photo"><span class="coin a"></span><span class="coin b"></span><img class="embleme" src="icones/${groupeInfo(e.groupe).id}.png" alt=""></div><div class="credit"></div>` };
+  if (!ph.length) return { html: `<div class="photo"><span class="coin a"></span><span class="coin b"></span><img class="embleme" src="icones/${groupeInfo(e.groupe).id}.svg" alt=""></div><div class="credit"></div>` };
   const imgs = ph.map((p, i) => `<img src="${esc(p.f)}" alt="${esc(e.nom_fr)}, photo ${i + 1}" ${i ? 'loading="lazy"' : ""}>`).join("");
   const points = ph.length > 1 ? `<div class="points">${ph.map((_, i) => `<i class="${i ? "" : "on"}"></i>`).join("")}</div>` : "";
   return { html: `<div class="photo"><span class="coin a"></span><span class="coin b"></span><div class="defile" id="defile">${imgs}</div>${points}</div>
@@ -105,6 +112,7 @@ function brancherGalerie(ph) {
 
 /* ---------- écrans ---------- */
 function accueil() {
+  fond("accueil");
   const total = ESP.length;
   const vusTotal = compteVus(ESP);
   // Voyage en cours d'abord, puis par complétion décroissante (à égalité : ordre d'origine).
@@ -120,9 +128,9 @@ function accueil() {
       ${cours ? `<div class="etiquette">${ico("voyage", "mini")} voyage en cours</div>` : ""}
       <div class="jauge"><i style="width:${ratio(n, l.length)}%"></i></div>
       <div class="chiffres">${n} / ${l.length} · ${pctAff(n, l.length)} %</div></a>
-      <button class="vol ${cours ? "on" : ""}" data-c="${c.id}" aria-pressed="${cours}" aria-label="Voyage en cours : ${esc(c.nom)}" title="Voyage en cours">${ico(cours ? "voyage_sombre" : "voyage")}</button></div>`;
+      <button class="vol ${cours ? "on" : ""}" data-c="${c.id}" aria-pressed="${cours}" aria-label="Voyage en cours : ${esc(c.nom)}" title="Voyage en cours">${ico("voyage")}</button></div>`;
   }).join("");
-  app.innerHTML = `<div class="barre"><div class="gros"><h1>${ico("rose_des_vents", "rose")}Mes carnets de voyage</h1><div class="sous">toutes les bêtes croisées en route</div></div>
+  app.innerHTML = `<div class="barre"><div class="gros"><h1>${ico("rose_des_vents", "rose")}Mes carnets de voyage</h1><div class="sous manu">toutes les bêtes croisées en route</div></div>
       <a class="rouage" href="#/reglages" aria-label="Réglages">${ico("reglages")}</a></div>
     <div class="total"><b>${pctAff(vusTotal, total)} %</b><span>${vusTotal} espèce${vusTotal > 1 ? "s" : ""} observée${vusTotal > 1 ? "s" : ""} sur ${total}</span></div>
     <div class="jauge grande"><i style="width:${ratio(vusTotal, total)}%"></i></div>
@@ -134,6 +142,7 @@ function accueil() {
 function carnet(cid) {
   const c = CARNETS.find((x) => x.id === cid);
   if (!c) return (location.hash = "#/");
+  fond(cid);
   const base = especesDuCarnet(cid);
   const n = compteVus(base);
   // 6 boutons (Tous + 5 groupes) sur 2 lignes de 3 ; un groupe vide reste affiché (grisé) pour garder la grille.
@@ -146,7 +155,7 @@ function carnet(cid) {
     .map(([k, t]) => `<button class="puce ${etat.filtre === k ? "on" : ""}" data-f="${k}">${t}</button>`).join("");
   app.innerHTML = `<div class="barre"><a class="retour" href="#/" aria-label="Retour">${RETOUR}</a><div class="gros"><h1>${ico(c.id, "drap")}${esc(c.nom)}</h1>
       <div class="sous">${n} sur ${base.length} · ${pctAff(n, base.length)} %</div></div>
-      <button class="vol ${enCours === cid ? "on" : ""}" id="encours" aria-pressed="${enCours === cid}" title="Voyage en cours">${ico(enCours === cid ? "voyage_sombre" : "voyage")}</button></div>
+      <button class="vol ${enCours === cid ? "on" : ""}" id="encours" aria-pressed="${enCours === cid}" title="Voyage en cours">${ico("voyage")}</button></div>
     <div class="jauge grande"><i style="width:${ratio(n, base.length)}%"></i></div>
     <div class="groupes">${tuiles}</div>
     <div class="puces">${filtres}</div>
@@ -176,7 +185,7 @@ function liste(cid) {
   const g = etat.groupe === "tous" ? { id: "tous", nom: "Tous les animaux" } : groupeInfo(etat.groupe);
   const cartes = l.map((e) => {
     const vu = !!vus()[e.id];
-    return `<a class="esp ${vu ? "" : "pasvu"}" href="#/espece/${e.id}/${cid}"><div class="vignette">${vignette(e)}${vu ? '<span class="tampon">${ico("vu")}</span>' : ""}${rareteDans(e, cid) === "rare" ? '<span class="rare">rare</span>' : ""}${e.danger && DANGER[e.danger.niveau] ? `<span class="pastille d${e.danger.niveau}" title="${DANGER[e.danger.niveau]}"></span>` : ""}</div>
+    return `<a class="esp ${vu ? "" : "pasvu"}" href="#/espece/${e.id}/${cid}"><div class="vignette">${vignette(e)}${vu ? `<span class="tampon">${ico("vu")}</span>` : ""}${rareteDans(e, cid) === "rare" ? '<span class="rare">rare</span>' : ""}${e.danger && DANGER[e.danger.niveau] ? `<span class="pastille d${e.danger.niveau}" title="${DANGER[e.danger.niveau]}"></span>` : ""}</div>
       <div class="txt"><span class="nom">${esc(e.nom_fr)}</span><span class="fam">${esc(e.famille_simple)}</span></div></a>`;
   }).join("");
   zone.innerHTML = `<h2 class="titre-liste">${ico(g.id, "titre")} ${esc(g.nom)}</h2><div class="compte">${l.length} espèce${l.length > 1 ? "s" : ""} · touche une photo pour la fiche</div><div class="grille">${cartes}</div>`;
@@ -185,6 +194,7 @@ function liste(cid) {
 function fiche(id, cid) {
   const e = PAR_ID[id];
   if (!e) return (location.hash = "#/");
+  fond(e.pays.includes(cid) ? cid : e.pays[0]);
   if (!etat.pays || !e.pays.includes(etat.pays) || etat.espece !== id) { etat.pays = e.pays.includes(cid) ? cid : e.pays[0]; etat.espece = id; }
   const v = vus()[id];
   const pp = e.par_pays[etat.pays] || {};
@@ -232,6 +242,7 @@ function sourcesHtml(e) {
 }
 
 function reglages() {
+  fond("accueil");
   const nb = Object.keys(vus()).length;
   app.innerHTML = `<div class="barre"><a class="retour" href="#/" aria-label="Retour">${RETOUR}</a><div class="gros"><h1>Réglages</h1></div></div>
     <div class="bloc"><h4>Mes observations</h4><p>${nb} animal${nb > 1 ? "ux" : ""} coché${nb > 1 ? "s" : ""}. Les coches sont gardées sur ce téléphone. Pense à faire une sauvegarde de temps en temps, surtout avant de changer de téléphone ou d'effacer les données du navigateur.</p>
