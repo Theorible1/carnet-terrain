@@ -262,8 +262,6 @@ function reglages() {
     <div class="bloc"><h4>Hors ligne</h4><p>L'appli marche sans réseau. Pour être sûre d'avoir toutes les photos en voyage, télécharge-les une fois avec le Wi-Fi.</p>
       <button class="btn petit" id="photos">Télécharger toutes les photos</button>
       <progress id="prog" value="0" max="1" hidden></progress><div class="msg" id="msg2"></div></div>
-    <div class="bloc"><h4>Tri des photos (temporaire)</h4><p>Pour repérer les photos qui ne vont pas.</p>
-      <a class="btn petit" href="#/tri-photos" style="text-align:center;text-decoration:none">Ouvrir le tri des photos</a></div>
     <div class="bloc" data-inst-bloc><h4>Installer l'appli</h4><div data-inst></div></div>
     <div class="bloc"><h4>Thème</h4><p>Change l'ambiance de l'appli. « Carnet de naturaliste » est le style d'origine.</p>
       <select class="choix" id="theme" aria-label="Thème"></select></div>
@@ -323,48 +321,6 @@ async function telechargerPhotos() {
   msg.textContent = ok === urls.length ? "Toutes les photos sont sur le téléphone." : ok + " photos sur " + urls.length + " (réessaie avec du réseau).";
 }
 
-/* ---------- TEMPORAIRE : tri des photos (à retirer avant le 25/12) ----------
-   Marque les mauvaises photos, clé "carnet.triphotos" = { "photos/xxx.jpg": true }, et télécharge la liste. */
-const triLire = () => { try { return JSON.parse(localStorage.getItem("carnet.triphotos2") || "{}"); } catch (e) { return {}; } };
-const triEcrire = (m) => { try { localStorage.setItem("carnet.triphotos2", JSON.stringify(m)); } catch (e) { /* tant pis */ } };
-
-function triPhotos() {
-  fond("accueil");
-  const marques = triLire();
-  // Seulement les photos ajoutées depuis le dernier tri (marquées "v" à la construction), tous carnets confondus.
-  const liste = ESP.filter((e) => (e.photos || []).some((p) => p.v)).sort((a, b) => a.nom_fr.localeCompare(b.nom_fr, "fr"));
-  const nbMarques = Object.keys(marques).length;
-  const cartes = liste.length ? liste.map((e) => {
-    const ph = (e.photos || []).filter((p) => p.v);
-    const imgs = ph.map((p) => `<button class="tri-ph${marques[p.f] ? " mauvaise" : ""}" data-f="${esc(p.f)}" aria-label="Photo à changer"><img src="${esc(p.f)}" loading="lazy" alt=""><span class="tri-x">✗</span></button>`).join("");
-    return `<div class="tri-esp"><div class="tri-nom">${esc(e.nom_fr)} <small>${esc(e.nom_scientifique)}</small></div><div class="tri-liste">${imgs}</div></div>`;
-  }).join("") : `<div class="bloc"><p>Aucune photo à vérifier.</p></div>`;
-  app.innerHTML = `<div class="barre"><a class="retour" href="#/reglages" aria-label="Retour">${RETOUR}</a><div class="gros"><h1>Tri des photos</h1></div></div>
-    <div class="bloc"><p>Seulement les nouvelles photos à vérifier (${liste.length} espèces). Touche une photo qui ne va pas : elle passe en rouge. Retouche-la pour annuler. Quand tu as fini, télécharge la liste.</p>
-      <button class="btn petit" id="tri-dl">Télécharger les photos cochées (<span id="tri-n">${nbMarques}</span>)</button>
-      <div class="msg" id="tri-msg"></div></div>
-    <div class="tri-grille">${cartes}</div>`;
-  app.querySelectorAll(".tri-ph").forEach((b) => {
-    b.onclick = () => {
-      const m = triLire(), f = b.dataset.f;
-      if (m[f]) delete m[f]; else m[f] = true;
-      triEcrire(m);
-      b.classList.toggle("mauvaise", !!m[f]);
-      document.getElementById("tri-n").textContent = Object.keys(m).length;
-    };
-  });
-  document.getElementById("tri-dl").onclick = () => {
-    const m = triLire();
-    const mauvaises = ESP.map((e) => ({ e, ph: (e.photos || []).filter((p) => m[p.f]) })).filter((x) => x.ph.length)
-      .map(({ e, ph }) => ({ id: e.id, nom_fr: e.nom_fr, nom_scientifique: e.nom_scientifique, pays: e.pays, photos_mauvaises: ph.map((p) => p.f), photos_restantes: (e.photos || []).length - ph.length }));
-    const sans = ESP.filter((e) => !(e.photos || []).length).map((e) => e.id);
-    const blob = new Blob([JSON.stringify({ appli: "tri-photos", date: aujourdhui(), mauvaises, sans_photo: sans }, null, 1)], { type: "application/json" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "photos-a-changer-" + aujourdhui() + ".json";
-    document.body.appendChild(a); a.click(); a.remove();
-    document.getElementById("tri-msg").textContent = "Liste téléchargée : " + mauvaises.length + " espèce(s) avec au moins une mauvaise photo.";
-  };
-}
-
 /* ---------- navigation ---------- */
 function route() {
   const p = location.hash.replace(/^#\/?/, "").split("/");
@@ -372,7 +328,6 @@ function route() {
   if (p[0] === "carnet" && p[1]) return carnet(p[1]);
   if (p[0] === "espece" && p[1]) return fiche(p[1], p[2] || "france");
   if (p[0] === "reglages") return reglages();
-  if (p[0] === "tri-photos") return triPhotos();
   accueil();
 }
 window.addEventListener("hashchange", route);
