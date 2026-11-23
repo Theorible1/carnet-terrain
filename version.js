@@ -1,1 +1,1 @@
-self.VERSION = "9dfbf91dba";
+self.VERSION = "6b52fe898e";
