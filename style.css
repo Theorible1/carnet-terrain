@@ -115,12 +115,12 @@ hr { border: 0; border-top: 1px dashed var(--trait); margin: 14px 0; }
 .d2 .pastille, .pastille.d2 { background: #e2c11d; }
 .d3 .pastille, .pastille.d3 { background: #e07b1f; }
 .d4 .pastille, .pastille.d4 { background: #c62f24; }
-.danger { display: flex; gap: 10px; align-items: flex-start; margin: 10px 0 0; padding: 9px 12px; border-radius: 10px; background: var(--carte); border: 1px solid var(--trait); }
+.danger { display: flex; gap: 10px; align-items: flex-start; margin: 10px 0 0; padding: 9px 12px; border-radius: 10px; background: var(--carte-forte); border: 1px solid var(--trait); }
 .danger .pastille { width: 22px; height: 22px; margin-top: 3px; }
 .danger b { display: block; font-family: var(--titre); font-size: 24px; line-height: 1.05; }
 .danger i { display: block; font-size: 14px; color: var(--encre-douce); margin-top: 2px; }
 .danger.d3 { border-color: #e07b1f; }
-.danger.d4 { border: 2px solid #c62f24; background: rgba(198,47,36,.08); }
+.danger.d4 { border: 2px solid #c62f24; background: linear-gradient(rgba(198,47,36,.08), rgba(198,47,36,.08)), var(--carte-forte); }
 .rare { position: absolute; left: 6px; top: 6px; color: #fff; background: var(--rouge); font-size: 11.5px; font-weight: 700;
   border-radius: 9px; padding: 1px 8px; }
 .vide { text-align: center; color: var(--encre-douce); padding: 36px 8px; font-family: var(--main); font-size: 18px; }
