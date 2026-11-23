@@ -325,29 +325,25 @@ async function telechargerPhotos() {
 
 /* ---------- TEMPORAIRE : tri des photos (à retirer avant le 25/12) ----------
    Marque les mauvaises photos, clé "carnet.triphotos" = { "photos/xxx.jpg": true }, et télécharge la liste. */
-const triLire = () => { try { return JSON.parse(localStorage.getItem("carnet.triphotos") || "{}"); } catch (e) { return {}; } };
-const triEcrire = (m) => { try { localStorage.setItem("carnet.triphotos", JSON.stringify(m)); } catch (e) { /* tant pis */ } };
-let triCarnet = "royaume_uni";
+const triLire = () => { try { return JSON.parse(localStorage.getItem("carnet.triphotos2") || "{}"); } catch (e) { return {}; } };
+const triEcrire = (m) => { try { localStorage.setItem("carnet.triphotos2", JSON.stringify(m)); } catch (e) { /* tant pis */ } };
 
 function triPhotos() {
   fond("accueil");
   const marques = triLire();
-  const liste = especesDuCarnet(triCarnet).slice().sort(tri);
+  // Seulement les photos ajoutées depuis le dernier tri (marquées "v" à la construction), tous carnets confondus.
+  const liste = ESP.filter((e) => (e.photos || []).some((p) => p.v)).sort((a, b) => a.nom_fr.localeCompare(b.nom_fr, "fr"));
   const nbMarques = Object.keys(marques).length;
-  const opts = CARNETS.map((c) => `<option value="${c.id}"${c.id === triCarnet ? " selected" : ""}>${esc(c.nom)}</option>`).join("");
-  const cartes = liste.map((e) => {
-    const ph = e.photos || [];
-    const imgs = ph.length ? ph.map((p) => `<button class="tri-ph${marques[p.f] ? " mauvaise" : ""}" data-f="${esc(p.f)}" aria-label="Photo à changer"><img src="${esc(p.f)}" loading="lazy" alt=""><span class="tri-x">✗</span></button>`).join("")
-      : `<div class="tri-aucune">Aucune photo</div>`;
+  const cartes = liste.length ? liste.map((e) => {
+    const ph = (e.photos || []).filter((p) => p.v);
+    const imgs = ph.map((p) => `<button class="tri-ph${marques[p.f] ? " mauvaise" : ""}" data-f="${esc(p.f)}" aria-label="Photo à changer"><img src="${esc(p.f)}" loading="lazy" alt=""><span class="tri-x">✗</span></button>`).join("");
     return `<div class="tri-esp"><div class="tri-nom">${esc(e.nom_fr)} <small>${esc(e.nom_scientifique)}</small></div><div class="tri-liste">${imgs}</div></div>`;
-  }).join("");
+  }).join("") : `<div class="bloc"><p>Aucune photo à vérifier.</p></div>`;
   app.innerHTML = `<div class="barre"><a class="retour" href="#/reglages" aria-label="Retour">${RETOUR}</a><div class="gros"><h1>Tri des photos</h1></div></div>
-    <div class="bloc"><p>Touche une photo qui ne va pas : elle passe en rouge. Retouche-la pour annuler. Quand tu as fini, télécharge la liste.</p>
-      <select class="choix" id="tri-carnet" aria-label="Carnet">${opts}</select>
+    <div class="bloc"><p>Seulement les nouvelles photos à vérifier (${liste.length} espèces). Touche une photo qui ne va pas : elle passe en rouge. Retouche-la pour annuler. Quand tu as fini, télécharge la liste.</p>
       <button class="btn petit" id="tri-dl">Télécharger les photos cochées (<span id="tri-n">${nbMarques}</span>)</button>
       <div class="msg" id="tri-msg"></div></div>
     <div class="tri-grille">${cartes}</div>`;
-  document.getElementById("tri-carnet").onchange = (ev) => { triCarnet = ev.target.value; triPhotos(); };
   app.querySelectorAll(".tri-ph").forEach((b) => {
     b.onclick = () => {
       const m = triLire(), f = b.dataset.f;
