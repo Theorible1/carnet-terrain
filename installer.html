@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4ecd8">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex">
+<title>Surprise</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+  /* Page d'installation seule (cible du QR code) : rien de l'appli n'est visible avant l'installation. */
+  html, body { margin: 0; height: 100%; }
+  body { display: flex; align-items: center; justify-content: center; background: #f4ecd8; color: #3b3226;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; text-align: center; padding: 24px; box-sizing: border-box; }
+  main { max-width: 420px; width: 100%; }
+  button { font: inherit; font-size: 1.6rem; font-weight: 700; color: #fff; background: #c8662b; border: 0; border-radius: 22px;
+    width: 100%; padding: 28px 20px; box-shadow: 0 6px 0 #9a4a1c; cursor: pointer; }
+  button:active { transform: translateY(4px); box-shadow: 0 2px 0 #9a4a1c; }
+  button[disabled] { opacity: .55; }
+  #msg { margin-top: 22px; font-size: 1.05rem; line-height: 1.45; min-height: 3em; }
+  ol { text-align: left; font-size: 1rem; line-height: 1.5; padding-left: 1.3em; }
+</style>
+</head>
+<body>
+<main>
+  <button id="btn" type="button">Installer</button>
+  <div id="msg"></div>
+</main>
+<script>
+"use strict";
+const btn = document.getElementById("btn"), msg = document.getElementById("msg");
+let invit = null;   // événement « beforeinstallprompt » de Chrome
+const deja = () => { try { return localStorage.getItem("carnet.installee") === "1"; } catch (e) { return false; } };
+const etapes = () => /iphone|ipad|ipod/i.test(navigator.userAgent)
+  ? "<ol><li>Touche le bouton Partager (carré avec une flèche).</li><li>Choisis « Sur l'écran d'accueil », puis « Ajouter ».</li></ol>"
+  : "<ol><li>Touche le menu ⋮ en haut à droite.</li><li>Choisis « Installer l'application » (ou « Ajouter à l'écran d'accueil »), puis confirme.</li></ol>";
+function fini() {
+  btn.disabled = true; btn.textContent = "Installé ✓";
+  msg.textContent = "Ouvre-la depuis ton écran d'accueil.";
+}
+if (deja()) fini();
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+// Chrome ne propose l'installation que si l'appli n'est pas déjà installée : on rouvre le bouton (cas d'une désinstallation).
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); invit = e; btn.disabled = false; btn.textContent = "Installer"; msg.textContent = ""; });
+window.addEventListener("appinstalled", () => { try { localStorage.setItem("carnet.installee", "1"); } catch (e) {} fini(); });
+
+btn.onclick = async () => {
+  if (!invit) { msg.innerHTML = "Ton téléphone n'a pas encore proposé l'installation. Attends quelques secondes et réessaie, ou fais-le à la main :" + etapes(); return; }
+  invit.prompt();
+  let choix = null;
+  try { choix = await invit.userChoice; } catch (e) {}
+  invit = null;
+  if (choix && choix.outcome === "accepted") { btn.disabled = true; btn.textContent = "Installation…"; msg.textContent = "Ça arrive sur ton écran d'accueil."; }
+  else msg.innerHTML = "Pas installée. Tu peux réessayer, ou le faire à la main :" + etapes();
+};
+</script>
+</body>
+</html>
